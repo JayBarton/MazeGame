@@ -10,9 +10,10 @@
 
 struct Cell
 {
-	bool foundNeighbours = false;
-	FVector position;
-	TArray<Cell> neighbours;
+	bool checked = false;
+	bool wall = false; //hopefully temp until i figure out a better solution
+	FVector2D position;
+	TArray<Cell*> neighbours;
 };
 
 UCLASS()
@@ -32,8 +33,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	TArray<FVector> grid;
+	TArray<Cell> grid;
+	TArray<FVector> wallPositions;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Wall")
 	TSubclassOf<AActor>  wall = nullptr;
+
+	int minSize = 0;
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+		int maxSize = 11;
 };
