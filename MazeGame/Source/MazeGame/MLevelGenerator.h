@@ -11,7 +11,6 @@
 struct Cell
 {
 	bool checked = false;
-	bool wall = false; //hopefully temp until i figure out a better solution
 	FVector2D position;
 	TArray<Cell*> neighbours;
 };
@@ -29,17 +28,28 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void SetWalls(TMap<FVector2D, bool>& wallGrid);
+
+	void BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
+
+	void SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	TArray<Cell> grid;
-	TArray<FVector> wallPositions;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Wall")
 	TSubclassOf<AActor>  wall = nullptr;
 
 	int minSize = 0;
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		int maxSize = 11;
+	int maxSize = 11;
+
+	//0, 0 point of the grid(X)
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float gridStartX = 450.0f;
+	//0, 0 point of the grid(Y)
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float gridStartY = 450.0f;
 };

@@ -16,57 +16,71 @@ AMLevelGenerator::AMLevelGenerator()
 void AMLevelGenerator::BeginPlay()
 {
 	Super::BeginPlay();
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	grid.Init(Cell(), maxSize * maxSize);
 	wallPositions.Reserve(100);
 
+	TArray<Cell> cellGrid;
+	TMap<FVector2D, bool> wallGrid;
+	cellGrid.Init(Cell(), (maxSize * maxSize) * 0.25f);
+	SetUpGrids(cellGrid, wallGrid);
+
+	BackTracker(cellGrid, wallGrid);
+
+	SetWalls(wallGrid);
+}
+
+void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
+{
 	//Temp until I think of a way to get the current index better
 	int count = 0;
-	for (int i = minSize; i < maxSize; i++)
+	for (int i = minSize; i < maxSize; i += 2)
 	{
-		for (int c = minSize; c < maxSize; c++)
+		for (int c = minSize; c < maxSize; c += 2)
 		{
-			FVector location(450.0f - (i * 100), 450.0f - (c * 100), 50.0f);
-			if (i % 2 == 0 && c % 2 == 0)
-			{
-				grid[count].position = FVector2D(i, c);
+			cellGrid[count].position = FVector2D(i, c);
 
-				//Set grid neighbours
-				grid[count].neighbours.Reserve(4);
-				FVector2D position = grid[count].position;
-				if (position.Y - 2 >= minSize)
-				{
-					grid[count].neighbours.Add(&grid[count - 2]);
-				}
-				if (position.Y + 2 < maxSize)
-				{
-					grid[count].neighbours.Add(&grid[count + 2]);
-				}
-				if (position.X - 2 >= minSize)
-				{
-					grid[count].neighbours.Add(&grid[count - 2 * maxSize]);
-				}
-				if (position.X + 2 < maxSize)
-				{
-					grid[count].neighbours.Add(&grid[count + 2 * maxSize]);
-				}
+			//Set grid neighbours
+			cellGrid[count].neighbours.Reserve(4);
+			FVector2D position = cellGrid[count].position;
+			if (position.Y - 2 >= minSize)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count - 1]);
 			}
-
-			else if (i % 2 != 0 || c % 2 != 0)
+			if (position.Y + 2 < maxSize)
 			{
-				//walls
-				grid[count].wall = true;
-				grid[count].position = FVector2D(location.X, location.Y);
+				cellGrid[count].neighbours.Add(&cellGrid[count + 1]);
+			}
+			if (position.X - 2 >= minSize)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count - 1 * maxSize * 0.5f]);
+			}
+			if (position.X + 2 < maxSize)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
 			}
 			count++;
 		}
 	}
 
-	TArray<Cell*> backTracker;
-	backTracker.Push(&grid[0]);
-	backTracker[0]->checked = true;
 
+	for (int i = minSize; i < maxSize - 1; i++)
+	{
+		for (int c = minSize; c < maxSize - 1; c++)
+		{
+			if (i % 2 != 0 || c % 2 != 0)
+			{
+				wallGrid.Add(FVector2D(i, c), true);
+			}
+		}
+	}
+}
+
+void AMLevelGenerator::BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
+{
+	TArray<Cell*> backTracker;
+	//Generate maze from the center
+	backTracker.Push(&cellGrid[cellGrid.Num() * 0.5f]);
+	backTracker[0]->checked = true;
 	while (backTracker.Num() > 0)
 	{
 		Cell* currentCell = backTracker.Pop();
@@ -88,32 +102,45 @@ void AMLevelGenerator::BeginPlay()
 
 			//remove wall between
 			FVector2D p(currentCell->position.X - neighborCell->position.X, currentCell->position.Y - neighborCell->position.Y);
-			p /= 2;
-			FVector2D idkman = currentCell->position - p;
-			int32 index = (idkman.X * maxSize) + idkman.Y;
+			FVector2D betweenPoint = currentCell->position - (p * 0.5f);
 
-			grid[index].wall = false;
+			wallGrid[betweenPoint] = false;
 
 			neighborCell->checked = true;
 			backTracker.Push(neighborCell);
 		}
 	}
+}
 
-	for (int i = 0; i < grid.Num(); i++)
+void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	for (auto& cell : wallGrid)
 	{
-		if (grid[i].wall)
+		if (cell.Value)
 		{
-			FVector location(grid[i].position.X, grid[i].position.Y, 50.0f);
-			wallPositions.Add(location);
+			FVector2D p = cell.Key;
+			FVector location(450.0f - (p.X * 100), 450.0f - (p.Y * 100), 50.0f);
+			AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 		}
 	}
-
-	for (int i = 0; i < wallPositions.Num(); i++)
+	//Outer walls
+	//Will need to rework this at some point so that I can create an entrance
+	for (int i = 0; i < maxSize; i++)
 	{
-		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, wallPositions[i], FRotator::ZeroRotator, SpawnParams);
+		FVector location(450.0f - (i * 100), 550.0f, 50.0f);
+		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 
+		location = FVector(450.0f - (i * 100), -450.0f, 50.0f);
+		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
+
+		location = FVector(-450.0f, 450.0f - (i * 100), 50.0f);
+		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
+
+		location = FVector(550.0f, 550.0f - (i * 100), 50.0f);
+		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
-	
 }
 
 // Called every frame
