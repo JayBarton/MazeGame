@@ -24,7 +24,41 @@ void AMLevelGenerator::BeginPlay()
 
 	BackTracker(cellGrid, wallGrid);
 
+	RemoveRandomWalls(wallGrid);
+
 	SetWalls(wallGrid);
+}
+
+void AMLevelGenerator::RemoveRandomWalls(TMap<FVector2D, bool>& wallGrid)
+{
+	TArray<FVector2D> wallIndexes;
+	wallGrid.GenerateKeyArray(wallIndexes);
+
+	for (int i = 0; i < maxSize * 0.5f; i++)
+	{
+		int randomIndex = FMath::RandRange(0, wallIndexes.Num() - 1);
+
+		FVector2D currentWall = wallIndexes[randomIndex];
+
+		FVector2D right(currentWall.X + 1, currentWall.Y);
+		FVector2D left(currentWall.X - 1, currentWall.Y);
+		FVector2D up(currentWall.X, currentWall.Y - 1);
+		FVector2D down(currentWall.X, currentWall.Y + 1);
+		if ((!wallGrid.Contains(right) && !wallGrid.Contains(left)) && (wallGrid.Contains(up) && wallGrid.Contains(down)))
+		{
+			wallGrid.Remove(currentWall);
+			wallIndexes.RemoveAt(randomIndex);
+		}
+		else if ((!wallGrid.Contains(up) && !wallGrid.Contains(down)) && (wallGrid.Contains(right) && wallGrid.Contains(left)))
+		{
+			wallGrid.Remove(currentWall);
+			wallIndexes.RemoveAt(randomIndex);
+		}
+		else
+		{
+			i--;
+		}
+	}
 }
 
 void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
@@ -102,7 +136,7 @@ void AMLevelGenerator::BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>
 			FVector2D p(currentCell->position.X - neighborCell->position.X, currentCell->position.Y - neighborCell->position.Y);
 			FVector2D betweenPoint = currentCell->position - (p * 0.5f);
 
-			wallGrid[betweenPoint] = false;
+			wallGrid.Remove(betweenPoint);
 
 			neighborCell->checked = true;
 			backTracker.Push(neighborCell);
