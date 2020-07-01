@@ -16,8 +16,6 @@ AMLevelGenerator::AMLevelGenerator()
 void AMLevelGenerator::BeginPlay()
 {
 	Super::BeginPlay();
-	grid.Init(Cell(), maxSize * maxSize);
-	wallPositions.Reserve(100);
 
 	TArray<Cell> cellGrid;
 	TMap<FVector2D, bool> wallGrid;
@@ -121,7 +119,7 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 		if (cell.Value)
 		{
 			FVector2D p = cell.Key;
-			FVector location(450.0f - (p.X * 100), 450.0f - (p.Y * 100), 50.0f);
+			FVector location(gridStartX - (p.X * distanceBetweenCells), gridStartY - (p.Y * distanceBetweenCells), wallFloor);
 			AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 		}
 	}
@@ -129,16 +127,16 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 	//Will need to rework this at some point so that I can create an entrance
 	for (int i = 0; i < maxSize; i++)
 	{
-		FVector location(450.0f - (i * 100), 550.0f, 50.0f);
+		FVector location(gridStartX - (i * distanceBetweenCells), gridStartY + distanceBetweenCells, wallFloor);
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 
-		location = FVector(450.0f - (i * 100), -450.0f, 50.0f);
+		location = FVector((gridStartX + distanceBetweenCells) - (i * distanceBetweenCells), gridStartY - (distanceBetweenCells * (maxSize - 1)), wallFloor);
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 
-		location = FVector(-450.0f, 450.0f - (i * 100), 50.0f);
+		location = FVector(gridStartX - (distanceBetweenCells * (maxSize - 1)), gridStartY - (i * distanceBetweenCells), wallFloor);
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 
-		location = FVector(550.0f, 550.0f - (i * 100), 50.0f);
+		location = FVector(gridStartX + distanceBetweenCells, gridStartY + distanceBetweenCells - (i * distanceBetweenCells), wallFloor);
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
 }

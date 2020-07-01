@@ -44,7 +44,7 @@ public:
 
 	int minSize = 0;
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	int maxSize = 11;
+	int maxSize = 10;
 
 	//0, 0 point of the grid(X)
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
@@ -52,4 +52,11 @@ public:
 	//0, 0 point of the grid(Y)
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float gridStartY = 450.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float wallFloor = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+		float distanceBetweenCells = 100.0f;
+
 };
