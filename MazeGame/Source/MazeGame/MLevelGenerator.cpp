@@ -22,6 +22,8 @@ void AMLevelGenerator::BeginPlay()
 	cellGrid.Init(Cell(), (maxSize * maxSize) * 0.25f);
 	SetUpGrids(cellGrid, wallGrid);
 
+	//Prim(cellGrid, wallGrid);
+
 	BackTracker(cellGrid, wallGrid);
 
 	RemoveRandomWalls(wallGrid);
@@ -113,6 +115,7 @@ void AMLevelGenerator::BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>
 	//Generate maze from the center
 	backTracker.Push(&cellGrid[cellGrid.Num() * 0.5f]);
 	backTracker[0]->checked = true;
+
 	while (backTracker.Num() > 0)
 	{
 		Cell* currentCell = backTracker.Pop();
@@ -144,18 +147,65 @@ void AMLevelGenerator::BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>
 	}
 }
 
+void AMLevelGenerator::Prim(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
+{
+	Cell* currentCell;
+	//Generate maze from the center
+	//this is not the center
+	currentCell = &cellGrid[0];
+	currentCell->checked = true;
+	TArray<Cell*> frontier;
+
+	for (int i = 0; i < currentCell->neighbours.Num(); i++)
+	{
+		frontier.Add(currentCell->neighbours[i]);
+	}
+	while (frontier.Num() > 0)
+	{
+		int index = FMath::RandRange(0, frontier.Num() - 1);
+		currentCell = frontier[index];
+		currentCell->checked = true;
+
+		frontier.RemoveAt(index);
+		TArray<Cell*>neighboursInMaze;
+		for (int i = 0; i < currentCell->neighbours.Num(); i++)
+		{
+			if (currentCell->neighbours[i]->checked)
+			{
+				neighboursInMaze.Add(currentCell->neighbours[i]);
+			}
+		}
+		int neighbourIndex = FMath::RandRange(0, neighboursInMaze.Num() - 1);
+
+		Cell* neighborCell = neighboursInMaze[neighbourIndex];
+
+		//remove wall between
+		FVector2D p(currentCell->position.X - neighborCell->position.X, currentCell->position.Y - neighborCell->position.Y);
+		FVector2D betweenPoint = currentCell->position - (p * 0.5f);
+
+		wallGrid.Remove(betweenPoint);
+
+		for (int i = 0; i < currentCell->neighbours.Num(); i++)
+		{
+			if (!currentCell->neighbours[i]->checked)
+			{
+				//Maybe there is a better solution than add unique?
+				frontier.AddUnique(currentCell->neighbours[i]);
+			}
+		}
+	}
+}
+
+
 void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	for (auto& cell : wallGrid)
 	{
-		if (cell.Value)
-		{
-			FVector2D p = cell.Key;
-			FVector location(gridStartX - (p.X * distanceBetweenCells), gridStartY - (p.Y * distanceBetweenCells), wallFloor);
-			AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
-		}
+		FVector2D p = cell.Key;
+		FVector location(gridStartX - (p.X * distanceBetweenCells), gridStartY - (p.Y * distanceBetweenCells), wallFloor);
+		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
 	//Outer walls
 	//Will need to rework this at some point so that I can create an entrance
@@ -174,6 +224,8 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
 }
+
+
 
 // Called every frame
 void AMLevelGenerator::Tick(float DeltaTime)

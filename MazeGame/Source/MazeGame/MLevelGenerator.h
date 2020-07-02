@@ -28,6 +28,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void Prim(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
+
 	void RemoveRandomWalls(TMap<FVector2D, bool>& wallGrid);
 
 	void SetWalls(TMap<FVector2D, bool>& wallGrid);
