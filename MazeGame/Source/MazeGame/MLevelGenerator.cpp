@@ -209,7 +209,67 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 	}
 	//Outer walls
 	//Will need to rework this at some point so that I can create an entrance
+
+
+/*	FVector left(gridStartX, gridStartY + distanceBetweenCells, wallFloor);
+	FVector right(gridStartX - (maxSize * distanceBetweenCells), gridStartY + distanceBetweenCells, wallFloor);
+	FVector position(left.X + right.X * 0.5f, gridStartY + distanceBetweenCells, wallFloor);
+	AActor* wall1 = GetWorld()->SpawnActor<AActor>(wall, position, FRotator::ZeroRotator, SpawnParams);
+	wall1->SetActorScale3D(FVector((left.X - right.X)/distanceBetweenCells, 1.0f, 1.0f));*/
+
+	/*FVector location1(0.0f, gridStartY + distanceBetweenCells, wallFloor);
+	AActor* wall1 = GetWorld()->SpawnActor<AActor>(wall, location1, FRotator::ZeroRotator, SpawnParams);
+
+	location1 = FVector(0.0f, gridStartY - (distanceBetweenCells * (maxSize - 1)), wallFloor);
+	AActor* wall2 = GetWorld()->SpawnActor<AActor>(wall, location1, FRotator::ZeroRotator, SpawnParams);
+
+	location1 = FVector(gridStartX - (distanceBetweenCells * (maxSize - 1)), 0.0f, wallFloor);
+	AActor* wall3 = GetWorld()->SpawnActor<AActor>(wall, location1, FRotator::ZeroRotator, SpawnParams);
+
+	location1 = FVector(gridStartX + distanceBetweenCells, 0.0f, wallFloor);
+	AActor* wall4 = GetWorld()->SpawnActor<AActor>(wall, location1, FRotator::ZeroRotator, SpawnParams);
 	for (int i = 0; i < maxSize; i++)
+	{
+		FVector location(gridStartX - (distanceBetweenCells) - (i * distanceBetweenCells * 0.5f), 0.0f, 0.0f);
+
+		UInstancedStaticMeshComponent* helpme = wall1->FindComponentByClass<UInstancedStaticMeshComponent>();
+		helpme->AddInstance(FTransform(location));
+
+		location = FVector((gridStartX - distanceBetweenCells) - (i * distanceBetweenCells * 0.5f), 0.0f, 0.0f);
+		helpme = wall2->FindComponentByClass<UInstancedStaticMeshComponent>();
+		helpme->AddInstance(FTransform(location));
+
+		location = FVector(0.0f, (gridStartY - distanceBetweenCells) - (i * distanceBetweenCells * 0.5f), 0.0f);
+		helpme = wall3->FindComponentByClass<UInstancedStaticMeshComponent>();
+		helpme->AddInstance(FTransform(location));
+
+		location = FVector(0.0f, (gridStartY - distanceBetweenCells) - (i * distanceBetweenCells * 0.5f), 0.0f);
+		helpme = wall4->FindComponentByClass<UInstancedStaticMeshComponent>();
+		helpme->AddInstance(FTransform(location));
+	}*/
+	FVector location1(-gridStartX, -gridStartY, wallFloor);
+	AActor* wall1 = GetWorld()->SpawnActor<AActor>(wall, location1, FRotator::ZeroRotator, SpawnParams);
+
+	float halfSize = distanceBetweenCells * 0.5f;
+
+	for (int i = 0; i < maxSize; i++)
+	{
+		UInstancedStaticMeshComponent* helpme = wall1->FindComponentByClass<UInstancedStaticMeshComponent>();
+		
+		FVector location(gridStartX - (i * halfSize), gridStartY + halfSize, 0.0f);
+		helpme->AddInstance(FTransform(location));
+
+		location = FVector((gridStartX + halfSize) - (i * halfSize), gridStartY - (halfSize * (maxSize - 1)), 0.0f);
+		helpme->AddInstance(FTransform(location));
+		location = FVector(gridStartX - (halfSize * (maxSize - 1)), gridStartY - (i * halfSize), 0.0f);
+		helpme->AddInstance(FTransform(location));
+		location = FVector(gridStartX + halfSize, gridStartY + halfSize - (i * halfSize), 0.0f);
+
+		helpme->AddInstance(FTransform(location));
+	}
+
+	//Original
+/*	for (int i = 0; i < maxSize; i++)
 	{
 		FVector location(gridStartX - (i * distanceBetweenCells), gridStartY + distanceBetweenCells, wallFloor);
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
@@ -222,7 +282,7 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 
 		location = FVector(gridStartX + distanceBetweenCells, gridStartY + distanceBetweenCells - (i * distanceBetweenCells), wallFloor);
 		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
-	}
+	}*/
 }
 
 
