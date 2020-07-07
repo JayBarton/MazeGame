@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "MPlayerCharacter.generated.h"
 
+class UCameraShake;
+
 UCLASS()
 class MAZEGAME_API AMPlayerCharacter : public ACharacter
 {
@@ -32,5 +34,8 @@ public:
 	// Handles input for moving right and left.
 	UFUNCTION()
 	void MoveRight(float Value);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<UCameraShake> CameraBob;
 
 };

@@ -92,6 +92,25 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 			{
 				cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
 			}
+
+		/*	if (position.Y - 2 >= minSize && position.Y != 6 && position.Y != 8)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count - 1]);
+			}
+			if (position.Y + 2 < maxSize && position.Y != 6 && position.Y != 8)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count + 1]);
+			}
+			if (position.X - 2 >= minSize && position.X != 6 && position.X != 8)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count - 1 * maxSize * 0.5f]);
+			}
+			if (position.X + 2 < maxSize && position.X != 6 && position.X != 8)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
+			}*/
+			//UE_LOG(LogTemp, Warning, TEXT("%i, %i, %i"), count, i, c);
+
 			count++;
 		}
 	}
@@ -112,10 +131,10 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 void AMLevelGenerator::BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
 {
 	TArray<Cell*> backTracker;
-	//Generate maze from the center
-	backTracker.Push(&cellGrid[cellGrid.Num() * 0.5f]);
+	backTracker.Push(&cellGrid[0]);
 	backTracker[0]->checked = true;
-
+	//cellGrid[44].checked = true;
+	//UE_LOG(LogTemp, Warning, TEXT("%i, %f, %f"), maxSize * maxSize, backTracker[0]->position.X, backTracker[0]->position.Y);
 	while (backTracker.Num() > 0)
 	{
 		Cell* currentCell = backTracker.Pop();

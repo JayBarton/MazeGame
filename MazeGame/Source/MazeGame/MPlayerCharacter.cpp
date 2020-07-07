@@ -3,6 +3,12 @@
 
 #include "MPlayerCharacter.h"
 
+
+#include "GameFramework/PlayerController.h" 
+
+#include "Kismet/GameplayStatics.h" 
+
+
 // Sets default values
 AMPlayerCharacter::AMPlayerCharacter()
 {
@@ -42,11 +48,34 @@ void AMPlayerCharacter::MoveForward(float Value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	AddMovementInput(Direction, Value);
+	if (Value != 0)
+	{
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraBob, Value);
+	}
 }
 
 void AMPlayerCharacter::MoveRight(float Value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
+/*	float forward = InputComponent->GetAxisValue(TEXT("MoveForward"));
+	
+	if (forward != 0)
+	{
+		float direction = 0;
+		if (Value > 0)
+		{
+			direction = 1;
+		}
+		else if(Value < 0)
+		{
+			direction = -1;
+		}
+		AddMovementInput(Direction, forward * direction);
+	}
+	else
+	{
+		AddMovementInput(Direction, Value);
+	}*/
 	AddMovementInput(Direction, Value);
 }
 
