@@ -45,22 +45,17 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Wall")
 	TSubclassOf<AActor>  wall = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "Wall")
+	TSubclassOf<AActor>  outerWall = nullptr;
 
 	int minSize = 0;
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	UPROPERTY(EditAnywhere, Category = "Setup")
 	int maxSize = 10;
-
-	//0, 0 point of the grid(X)
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float gridStartX = 450.0f;
-	//0, 0 point of the grid(Y)
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float gridStartY = 450.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float wallFloor = 50.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		float distanceBetweenCells = 100.0f;
+	float distanceBetweenCells = 100.0f;
 
 };

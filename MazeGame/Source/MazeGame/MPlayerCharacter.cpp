@@ -48,10 +48,9 @@ void AMPlayerCharacter::MoveForward(float Value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	AddMovementInput(Direction, Value);
-	if (Value != 0)
-	{
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraBob, Value);
-	}
+
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraBob, Value);
+	
 }
 
 void AMPlayerCharacter::MoveRight(float Value)

@@ -31,38 +31,6 @@ void AMLevelGenerator::BeginPlay()
 	SetWalls(wallGrid);
 }
 
-void AMLevelGenerator::RemoveRandomWalls(TMap<FVector2D, bool>& wallGrid)
-{
-	TArray<FVector2D> wallIndexes;
-	wallGrid.GenerateKeyArray(wallIndexes);
-
-	for (int i = 0; i < maxSize * 0.5f; i++)
-	{
-		int randomIndex = FMath::RandRange(0, wallIndexes.Num() - 1);
-
-		FVector2D currentWall = wallIndexes[randomIndex];
-
-		FVector2D right(currentWall.X + 1, currentWall.Y);
-		FVector2D left(currentWall.X - 1, currentWall.Y);
-		FVector2D up(currentWall.X, currentWall.Y - 1);
-		FVector2D down(currentWall.X, currentWall.Y + 1);
-		if ((!wallGrid.Contains(right) && !wallGrid.Contains(left)) && (wallGrid.Contains(up) && wallGrid.Contains(down)))
-		{
-			wallGrid.Remove(currentWall);
-			wallIndexes.RemoveAt(randomIndex);
-		}
-		else if ((!wallGrid.Contains(up) && !wallGrid.Contains(down)) && (wallGrid.Contains(right) && wallGrid.Contains(left)))
-		{
-			wallGrid.Remove(currentWall);
-			wallIndexes.RemoveAt(randomIndex);
-		}
-		else
-		{
-			i--;
-		}
-	}
-}
-
 void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
 {
 	//Temp until I think of a way to get the current index better
@@ -215,21 +183,56 @@ void AMLevelGenerator::Prim(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallG
 	}
 }
 
+void AMLevelGenerator::RemoveRandomWalls(TMap<FVector2D, bool>& wallGrid)
+{
+	TArray<FVector2D> wallIndexes;
+	wallGrid.GenerateKeyArray(wallIndexes);
+
+	for (int i = 0; i < maxSize * 0.5f; i++)
+	{
+		int randomIndex = FMath::RandRange(0, wallIndexes.Num() - 1);
+
+		FVector2D currentWall = wallIndexes[randomIndex];
+
+		FVector2D right(currentWall.X + 1, currentWall.Y);
+		FVector2D left(currentWall.X - 1, currentWall.Y);
+		FVector2D up(currentWall.X, currentWall.Y - 1);
+		FVector2D down(currentWall.X, currentWall.Y + 1);
+		if ((!wallGrid.Contains(right) && !wallGrid.Contains(left)) && (wallGrid.Contains(up) && wallGrid.Contains(down)))
+		{
+			wallGrid.Remove(currentWall);
+			wallIndexes.RemoveAt(randomIndex);
+		}
+		else if ((!wallGrid.Contains(up) && !wallGrid.Contains(down)) && (wallGrid.Contains(right) && wallGrid.Contains(left)))
+		{
+			wallGrid.Remove(currentWall);
+			wallIndexes.RemoveAt(randomIndex);
+		}
+		else
+		{
+			i--;
+		}
+	}
+}
 
 void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	float startPosition = (maxSize - 2) * distanceBetweenCells * 0.5f;
 	for (auto& cell : wallGrid)
 	{
 		FVector2D p = cell.Key;
-		FVector location(gridStartX - (p.X * distanceBetweenCells), gridStartY - (p.Y * distanceBetweenCells), wallFloor);
+		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), wallFloor);
 		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
+
+	//FVector location(gridStartX - (p.X * distanceBetweenCells), gridStartY - (p.Y * distanceBetweenCells), wallFloor);
+
 	//Outer walls
 	//Will need to rework this at some point so that I can create an entrance
-	FVector location1(-gridStartX, -gridStartY, wallFloor);
-	AActor* wall1 = GetWorld()->SpawnActor<AActor>(wall, location1, FRotator::ZeroRotator, SpawnParams);
+	FVector location1(-startPosition, -startPosition, wallFloor);
+	AActor* wall1 = GetWorld()->SpawnActor<AActor>(outerWall, location1, FRotator::ZeroRotator, SpawnParams);
 
 	float halfSize = distanceBetweenCells * 0.5f;
 
@@ -237,14 +240,14 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 	{
 		UInstancedStaticMeshComponent* helpme = wall1->FindComponentByClass<UInstancedStaticMeshComponent>();
 
-		FVector location(gridStartX - (i * halfSize), gridStartY + halfSize, 0.0f);
+		FVector location(startPosition - (i * halfSize), startPosition + halfSize, 0.0f);
 		helpme->AddInstance(FTransform(location));
 
-		location = FVector((gridStartX + halfSize) - (i * halfSize), gridStartY - (halfSize * (maxSize - 1)), 0.0f);
+		location = FVector((startPosition + halfSize) - (i * halfSize), startPosition - (halfSize * (maxSize - 1)), 0.0f);
 		helpme->AddInstance(FTransform(location));
-		location = FVector(gridStartX - (halfSize * (maxSize - 1)), gridStartY - (i * halfSize), 0.0f);
+		location = FVector(startPosition - (halfSize * (maxSize - 1)), startPosition - (i * halfSize), 0.0f);
 		helpme->AddInstance(FTransform(location));
-		location = FVector(gridStartX + halfSize, gridStartY + halfSize - (i * halfSize), 0.0f);
+		location = FVector(startPosition + halfSize, startPosition + halfSize - (i * halfSize), 0.0f);
 
 		helpme->AddInstance(FTransform(location));
 	}
