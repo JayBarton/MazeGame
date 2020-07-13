@@ -25,12 +25,15 @@ public:
 
 	void GetForwardDirection();
 
+	void TurnDirection(float angle);
+
 	//If the enemy should check to turn before reaching a wall
-	bool checkTurn = true;
-	int turn = 0;
+	bool checkRight = true;
+	bool checkLeft = true;
+
+	bool tryTurn = false;
+	int turnRight = 0;
+	int turnLeft = 0;
 	bool turned = false;
-
-	void CheckTurn();
-
 
 };

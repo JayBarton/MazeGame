@@ -27,7 +27,6 @@ void AMEnemy::BeginPlay()
 	Super::BeginPlay();
 	
 	FTimerHandle TimerHandle_CheckTurn;
-	GetWorldTimerManager().SetTimer(TimerHandle_CheckTurn, this, &AMEnemy::CheckTurn, 3.0f, true);
 	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), FVector(-700.0f, 700.0f, 0.0f));
 }
 
@@ -35,6 +34,7 @@ void AMEnemy::BeginPlay()
 void AMEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 
 	GetForwardDirection();
 
@@ -54,37 +54,100 @@ void AMEnemy::GetForwardDirection()
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
 
 
-	FVector SideStart = Start + (GetActorForwardVector() * -50.0f);
+	//FVector SideStart = Start + (GetActorForwardVector() * 90.0f);
+	FVector SideStart = End;
 	FVector RightLine = SideStart + (GetActorRightVector() * 200.0f);
 	FVector LeftLine = SideStart + (GetActorRightVector() * -200.0f);
 
 	DrawDebugLine(GetWorld(), SideStart, RightLine, FColor::Red, false, 1, 0, 1);
 	DrawDebugLine(GetWorld(), SideStart, LeftLine, FColor::Blue, false, 1, 0, 1);
-	
-	bool turned = false;
-	if (checkTurn)
-	{
-		turn = FMath::RandRange(0, 1);
+	turned = false;
 
-		checkTurn = false;
-	}
-
-	if (turn)
+	if (checkRight)
 	{
-		//Check if there are paths to the side
 		if (!GetWorld()->LineTraceSingleByChannel(OutHit, SideStart, RightLine, ECC_Visibility, CollisionParams))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AAA"));
-
-
-
-			FRotator NewRotation = GetActorRotation();
-			NewRotation.Yaw += 90.0f;
-			SetActorRotation(NewRotation);
-			turned = true;
-			checkTurn = false;
-			turn = 0;
+			checkRight = false;
+			tryTurn = true;
 		}
+	}
+	else
+	{
+		if (GetWorld()->LineTraceSingleByChannel(OutHit, SideStart, RightLine, ECC_Visibility, CollisionParams))
+		{
+			if (OutHit.bBlockingHit)
+			{
+				checkRight = true;
+				if (tryTurn)
+				{
+					//turnRight = 1;
+					turnRight = FMath::RandRange(0, 1);
+				}
+			}
+		}
+	}
+
+	if (checkLeft)
+	{
+		if (!GetWorld()->LineTraceSingleByChannel(OutHit, SideStart, LeftLine, ECC_Visibility, CollisionParams))
+		{
+			checkLeft = false;
+			tryTurn = true;
+		}
+	}
+	else
+	{
+		if (GetWorld()->LineTraceSingleByChannel(OutHit, SideStart, LeftLine, ECC_Visibility, CollisionParams))
+		{
+			if (OutHit.bBlockingHit)
+			{
+				checkLeft = true;
+				if (tryTurn)
+				{
+
+					//turnLeft = 1;
+					turnLeft = FMath::RandRange(0, 1);
+				}
+			}
+		}
+	}
+
+	if (turnRight > 0 && turnLeft > 0)
+	{
+		int pick = FMath::RandRange(0, 1);
+		if (pick > 0)
+		{
+			turnLeft = 0;
+			UE_LOG(LogTemp, Warning, TEXT("111"));
+		}
+		else
+		{
+			turnRight = 0;
+			UE_LOG(LogTemp, Warning, TEXT("222"));
+		}
+	}
+	if (turnRight > 0)
+	{
+		TurnDirection(90.0f);
+		turned = true;
+		tryTurn = false;
+		checkRight = false;
+		checkLeft = false;
+		turnRight = 0;
+
+		UE_LOG(LogTemp, Warning, TEXT("AAA"));
+
+	}
+	else if (turnLeft > 0)
+	{
+		TurnDirection(-90.0f);
+		turned = true;
+		tryTurn = false;
+		checkLeft = false;
+		checkRight = false;
+		turnLeft = 0;
+
+		UE_LOG(LogTemp, Warning, TEXT("BBB"));
 	}
 
 	if(!turned)
@@ -93,11 +156,17 @@ void AMEnemy::GetForwardDirection()
 		{
 			if (OutHit.bBlockingHit)
 			{
+				checkRight = true;
 				//Enemy hit a wall and needs to turn
 				int dir = 0;
 				float turnAngle = 90.0f;
 				bool rightClear = true;
 				bool leftClear = true;
+
+				SideStart = Start + (GetActorForwardVector() * 50.0f);
+
+				 RightLine = SideStart + (GetActorRightVector() * 200.0f);
+				 LeftLine = SideStart + (GetActorRightVector() * -200.0f);
 
 				//Check if the right and/or left of the enemy is clear
 				if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, RightLine, ECC_Visibility, CollisionParams))
@@ -144,9 +213,12 @@ void AMEnemy::GetForwardDirection()
 					UE_LOG(LogTemp, Warning, TEXT("back"));
 				}
 
-				FRotator NewRotation = GetActorRotation();
-				NewRotation.Yaw += turnAngle * dir;
-				SetActorRotation(NewRotation);
+				TurnDirection(turnAngle * dir);
+
+				turned = true;
+				tryTurn = false;
+				checkRight = false;
+				checkLeft = false;
 
 				//Make sure enemy isn't turning into a wall
 			//	ForwardVector = GetActorForwardVector();
@@ -164,12 +236,10 @@ void AMEnemy::GetForwardDirection()
 	}
 }
 
-void AMEnemy::CheckTurn()
+void AMEnemy::TurnDirection(float angle)
 {
-	if (!checkTurn)
-	{
-		checkTurn = true;
-	}
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Yaw += angle;
+	SetActorRotation(NewRotation);
 }
-
 
