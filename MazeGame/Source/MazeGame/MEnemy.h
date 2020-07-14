@@ -36,4 +36,8 @@ public:
 	int turnLeft = 0;
 	bool turned = false;
 
+	//will expand into behavior states later
+	bool moveToPosition = false;
+
+	FVector2D positionToMove;
 };

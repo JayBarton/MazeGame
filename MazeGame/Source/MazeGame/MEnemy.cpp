@@ -6,12 +6,10 @@
 #include "Runtime/Engine/Classes/Engine/TargetPoint.h"
 
 #include "Blueprint/AIBlueprintHelperLibrary.h" 
+#include "NavigationSystem.h" 
 
 #include "DrawDebugHelpers.h"
 
-
-
-#include "GameFramework/Actor.h" 
 
 // Sets default values
 AMEnemy::AMEnemy()
@@ -25,8 +23,7 @@ AMEnemy::AMEnemy()
 void AMEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	FTimerHandle TimerHandle_CheckTurn;
+	positionToMove = FVector2D(0.0f, 0.0f);
 	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), FVector(-700.0f, 700.0f, 0.0f));
 }
 
@@ -35,10 +32,49 @@ void AMEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	FVector2D currentPosition(GetActorLocation().X, GetActorLocation().Y);
 
-	GetForwardDirection();
+	if (moveToPosition)
+	{
+		if ((currentPosition - positionToMove).Size() < 600.0f)
+		{
+			//Is there a better way to cancel movetolocation?
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), GetActorLocation());
 
-	AddMovementInput(GetActorForwardVector(), 1.0f);
+			moveToPosition = false;
+			UE_LOG(LogTemp, Warning, TEXT("Wandering"));
+
+			FRotator NewRotation = GetActorRotation();
+			NewRotation.Yaw = FMath::RoundToFloat(NewRotation.Yaw / 90.0f) * 90.0f;
+			SetActorRotation(NewRotation);
+
+			UE_LOG(LogTemp, Warning, TEXT("A: %f"), NewRotation.Yaw);
+			UE_LOG(LogTemp, Warning, TEXT("B: %f"), GetActorRotation().Yaw);
+			UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), GetActorForwardVector().X, GetActorForwardVector().Y);
+
+			currentPosition.X = FMath::RoundToFloat(currentPosition.X / 100.0f) * 100.0f;
+			currentPosition.Y = FMath::RoundToFloat(currentPosition.Y / 100.0f) * 100.0f;
+			SetActorLocation(FVector(currentPosition.X, currentPosition.Y, GetActorLocation().Z));
+		}
+		
+	}
+	else
+	{
+
+		if ((currentPosition - positionToMove).Size() > 1000.0f)
+		{
+			moveToPosition = true;
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), FVector(positionToMove.X, positionToMove.Y, 0.0f));
+			UE_LOG(LogTemp, Warning, TEXT("Seeking"));
+
+		}
+		else
+		{
+			GetForwardDirection();
+
+			AddMovementInput(GetActorForwardVector(), 1.0f);
+		}
+	}
 }
 
 void AMEnemy::GetForwardDirection()
@@ -54,14 +90,16 @@ void AMEnemy::GetForwardDirection()
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
 
 
-	//FVector SideStart = Start + (GetActorForwardVector() * 90.0f);
-	FVector SideStart = End;
+
+	turned = false;
+
+	FVector SideStart = Start + (GetActorForwardVector() * 90.0f);
+	//FVector SideStart = End;
 	FVector RightLine = SideStart + (GetActorRightVector() * 200.0f);
 	FVector LeftLine = SideStart + (GetActorRightVector() * -200.0f);
 
 	DrawDebugLine(GetWorld(), SideStart, RightLine, FColor::Red, false, 1, 0, 1);
 	DrawDebugLine(GetWorld(), SideStart, LeftLine, FColor::Blue, false, 1, 0, 1);
-	turned = false;
 
 	if (checkRight)
 	{
@@ -118,36 +156,30 @@ void AMEnemy::GetForwardDirection()
 		if (pick > 0)
 		{
 			turnLeft = 0;
-			UE_LOG(LogTemp, Warning, TEXT("111"));
 		}
 		else
 		{
 			turnRight = 0;
-			UE_LOG(LogTemp, Warning, TEXT("222"));
+			
 		}
+		//UE_LOG(LogTemp, Warning, TEXT("rand early"));
 	}
 	if (turnRight > 0)
 	{
 		TurnDirection(90.0f);
 		turned = true;
-		tryTurn = false;
-		checkRight = false;
-		checkLeft = false;
 		turnRight = 0;
 
-		UE_LOG(LogTemp, Warning, TEXT("AAA"));
+		//UE_LOG(LogTemp, Warning, TEXT("right early"));
 
 	}
 	else if (turnLeft > 0)
 	{
 		TurnDirection(-90.0f);
 		turned = true;
-		tryTurn = false;
-		checkLeft = false;
-		checkRight = false;
 		turnLeft = 0;
 
-		UE_LOG(LogTemp, Warning, TEXT("BBB"));
+	//	UE_LOG(LogTemp, Warning, TEXT("left early"));
 	}
 
 	if(!turned)
@@ -192,45 +224,29 @@ void AMEnemy::GetForwardDirection()
 					{
 						dir = -1;
 					}
-					UE_LOG(LogTemp, Warning, TEXT("rand"));
+					//UE_LOG(LogTemp, Warning, TEXT("rand"));
 				}
 				//If only one is clear, turn in that direction
 				else if (rightClear && !leftClear)
 				{
 					dir = 1;
-					UE_LOG(LogTemp, Warning, TEXT("right"));
+					//UE_LOG(LogTemp, Warning, TEXT("right"));
 				}
 				else if (!rightClear && leftClear)
 				{
 					dir = -1;
-					UE_LOG(LogTemp, Warning, TEXT("left"));
+				//	UE_LOG(LogTemp, Warning, TEXT("left"));
 				}
 				//If neither are clear, turn around
 				else if (!rightClear && !leftClear)
 				{
 					dir = 1;
 					turnAngle *= 2;
-					UE_LOG(LogTemp, Warning, TEXT("back"));
+				//	UE_LOG(LogTemp, Warning, TEXT("back"));
 				}
 
 				TurnDirection(turnAngle * dir);
 
-				turned = true;
-				tryTurn = false;
-				checkRight = false;
-				checkLeft = false;
-
-				//Make sure enemy isn't turning into a wall
-			//	ForwardVector = GetActorForwardVector();
-			//	End = ((ForwardVector * 150.0f) + Start);
-				/*if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams))
-				{
-					if (OutHit.bBlockingHit)
-					{
-						NewRotation.Yaw += 90.0f * dir;
-						SetActorRotation(NewRotation);
-					}
-				}*/
 			}
 		}
 	}
@@ -239,7 +255,13 @@ void AMEnemy::GetForwardDirection()
 void AMEnemy::TurnDirection(float angle)
 {
 	FRotator NewRotation = GetActorRotation();
-	NewRotation.Yaw += angle;
+	NewRotation.Yaw = FMath::RoundToFloat(NewRotation.Yaw + angle);
 	SetActorRotation(NewRotation);
+	//UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), NewRotation.Vector().ForwardVector.X, NewRotation.Vector().ForwardVector.Y);
+
+	tryTurn = false;
+	checkRight = false;
+	checkLeft = false;
+
 }
 
