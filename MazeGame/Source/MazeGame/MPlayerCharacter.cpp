@@ -3,8 +3,8 @@
 
 #include "MPlayerCharacter.h"
 
-
 #include "GameFramework/PlayerController.h" 
+#include "Components/PawnNoiseEmitterComponent.h"
 
 #include "Kismet/GameplayStatics.h" 
 
@@ -15,6 +15,7 @@ AMPlayerCharacter::AMPlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
 }
 
 // Called when the game starts or when spawned

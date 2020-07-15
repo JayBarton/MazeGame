@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "MEnemy.generated.h"
 
+class UPawnSensingComponent;
+
+
 UCLASS()
 class MAZEGAME_API AMEnemy : public ACharacter
 {
@@ -23,9 +26,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void Reset(FVector2D& currentPosition);
+
 	void GetForwardDirection();
 
 	void TurnDirection(float angle);
+
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UPawnSensingComponent* PawnSensingComp;
 
 	//If the enemy should check to turn before reaching a wall
 	bool checkRight = true;
@@ -39,5 +47,15 @@ public:
 	//will expand into behavior states later
 	bool moveToPosition = false;
 
-	FVector2D positionToMove;
+	bool foundPlayer = false;
+
+	APawn* playerPawn;
+
+	UFUNCTION()
+	void OnPawnSeen(APawn* SeenPawn);
+
+	UFUNCTION()
+	void OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volumne);
+
+	void FoundPlayer();
 };

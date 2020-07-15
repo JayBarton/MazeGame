@@ -3,13 +3,15 @@
 
 #include "MEnemy.h"
 #include "AIController.h"
-#include "Runtime/Engine/Classes/Engine/TargetPoint.h"
+
+#include "Perception/PawnSensingComponent.h"
 
 #include "Blueprint/AIBlueprintHelperLibrary.h" 
 #include "NavigationSystem.h" 
 
 #include "DrawDebugHelpers.h"
 
+#include "Kismet/GameplayStatics.h" 
 
 // Sets default values
 AMEnemy::AMEnemy()
@@ -17,13 +19,17 @@ AMEnemy::AMEnemy()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
+	//Guard will not hear if they have already seen
+	PawnSensingComp->OnSeePawn.AddDynamic(this, &AMEnemy::OnPawnSeen);
+	PawnSensingComp->OnHearNoise.AddDynamic(this, &AMEnemy::OnNoiseHeard);
 }
 
 // Called when the game starts or when spawned
 void AMEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	positionToMove = FVector2D(0.0f, 0.0f);
+	playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), FVector(-700.0f, 700.0f, 0.0f));
 }
 
@@ -32,49 +38,77 @@ void AMEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector2D currentPosition(GetActorLocation().X, GetActorLocation().Y);
-
-	if (moveToPosition)
+	FVector2D playerPosition(playerPawn->GetActorLocation().X, playerPawn->GetActorLocation().Y);
+	if (foundPlayer)
 	{
-		if ((currentPosition - positionToMove).Size() < 600.0f)
+		FVector2D currentPosition(GetActorLocation().X, GetActorLocation().Y);
+	
+		if ((currentPosition - playerPosition).Size() > 1000.0f)
 		{
-			//Is there a better way to cancel movetolocation?
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), GetActorLocation());
+			foundPlayer = false;
+			if (AController* AI = GetController())
+			{
+				AI->StopMovement();
+			}
+			Reset(currentPosition);
 
-			moveToPosition = false;
-			UE_LOG(LogTemp, Warning, TEXT("Wandering"));
-
-			FRotator NewRotation = GetActorRotation();
-			NewRotation.Yaw = FMath::RoundToFloat(NewRotation.Yaw / 90.0f) * 90.0f;
-			SetActorRotation(NewRotation);
-
-			UE_LOG(LogTemp, Warning, TEXT("A: %f"), NewRotation.Yaw);
-			UE_LOG(LogTemp, Warning, TEXT("B: %f"), GetActorRotation().Yaw);
-			UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), GetActorForwardVector().X, GetActorForwardVector().Y);
-
-			currentPosition.X = FMath::RoundToFloat(currentPosition.X / 100.0f) * 100.0f;
-			currentPosition.Y = FMath::RoundToFloat(currentPosition.Y / 100.0f) * 100.0f;
-			SetActorLocation(FVector(currentPosition.X, currentPosition.Y, GetActorLocation().Z));
+			UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
 		}
-		
 	}
 	else
 	{
-
-		if ((currentPosition - positionToMove).Size() > 1000.0f)
+		FVector2D currentPosition(GetActorLocation().X, GetActorLocation().Y);
+		if (moveToPosition)
 		{
-			moveToPosition = true;
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), FVector(positionToMove.X, positionToMove.Y, 0.0f));
-			UE_LOG(LogTemp, Warning, TEXT("Seeking"));
+			if ((currentPosition - playerPosition).Size() < 1000.0f)
+			{
+				if (AController* AI = GetController())
+				{
+					AI->StopMovement();
+				}
+
+				UE_LOG(LogTemp, Warning, TEXT("Wandering"));
+
+				Reset(currentPosition);
+
+				moveToPosition = false;
+
+			}
 
 		}
 		else
 		{
-			GetForwardDirection();
 
-			AddMovementInput(GetActorForwardVector(), 1.0f);
+			if ((currentPosition - playerPosition).Size() > 2000.0f)
+			{
+				moveToPosition = true;
+				UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), FVector(playerPosition.X, playerPosition.Y, 0.0f));
+				UE_LOG(LogTemp, Warning, TEXT("Seeking"));
+
+			}
+			else
+			{
+				GetForwardDirection();
+
+				AddMovementInput(GetActorForwardVector(), 1.0f);
+			}
 		}
 	}
+}
+
+void AMEnemy::Reset(FVector2D& currentPosition)
+{
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Yaw = FMath::RoundToFloat(NewRotation.Yaw / 90.0f) * 90.0f;
+	SetActorRotation(NewRotation);
+
+	UE_LOG(LogTemp, Warning, TEXT("A: %f"), NewRotation.Yaw);
+	UE_LOG(LogTemp, Warning, TEXT("B: %f"), GetActorRotation().Yaw);
+	UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), GetActorForwardVector().X, GetActorForwardVector().Y);
+
+	currentPosition.X = FMath::RoundToFloat(currentPosition.X / 100.0f) * 100.0f;
+	currentPosition.Y = FMath::RoundToFloat(currentPosition.Y / 100.0f) * 100.0f;
+	SetActorLocation(FVector(currentPosition.X, currentPosition.Y, GetActorLocation().Z));
 }
 
 void AMEnemy::GetForwardDirection()
@@ -88,8 +122,6 @@ void AMEnemy::GetForwardDirection()
 	FCollisionQueryParams CollisionParams;
 
 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-
-
 
 	turned = false;
 
@@ -263,5 +295,36 @@ void AMEnemy::TurnDirection(float angle)
 	checkRight = false;
 	checkLeft = false;
 
+}
+
+void AMEnemy::OnPawnSeen(APawn* SeenPawn)
+{
+	if (SeenPawn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("I see you"));
+		DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Red, false, 10.0f);
+		FoundPlayer();
+	}
+}
+
+void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volumne)
+{
+	DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
+	UE_LOG(LogTemp, Warning, TEXT("Yes I hear you"));
+	FoundPlayer();
+
+}
+
+void AMEnemy::FoundPlayer()
+{
+	if (!foundPlayer)
+	{
+		foundPlayer = true;
+		if (AController* AI = GetController())
+		{
+			AI->StopMovement();
+		}
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), playerPawn);
+	}
 }
 

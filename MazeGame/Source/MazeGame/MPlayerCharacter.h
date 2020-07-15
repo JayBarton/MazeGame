@@ -7,6 +7,7 @@
 #include "MPlayerCharacter.generated.h"
 
 class UCameraShake;
+class UPawnNoiseEmitterComponent;
 
 UCLASS()
 class MAZEGAME_API AMPlayerCharacter : public ACharacter
@@ -34,6 +35,9 @@ public:
 	// Handles input for moving right and left.
 	UFUNCTION()
 	void MoveRight(float Value);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	UPawnNoiseEmitterComponent* NoiseEmitterComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	TSubclassOf<UCameraShake> CameraBob;
