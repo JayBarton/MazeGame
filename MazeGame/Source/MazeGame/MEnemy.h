@@ -26,11 +26,31 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void WanderAroundPlayer(FVector2D& playerPosition);
+
+	void MoveBackToPlayer(FVector2D& currentPosition, FVector2D& playerPosition);
+
+	void Wander(FVector2D& currentPosition, FVector2D& playerPosition);
+
+	void FollowPlayer(FVector2D& playerPosition);
+
 	void Reset(FVector2D& currentPosition);
 
 	void GetForwardDirection();
 
+	void CheckSides(bool& turned);
+
+	void CheckFront();
+
 	void TurnDirection(float angle);
+
+	UFUNCTION()
+	void OnPawnSeen(APawn* SeenPawn);
+
+	UFUNCTION()
+	void OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volumne);
+
+	void FoundPlayer();
 
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UPawnSensingComponent* PawnSensingComp;
@@ -42,20 +62,16 @@ public:
 	bool tryTurn = false;
 	int turnRight = 0;
 	int turnLeft = 0;
-	bool turned = false;
 
 	//will expand into behavior states later
 	bool moveToPosition = false;
 
 	bool foundPlayer = false;
 
+	float seenTimer = 0.0f;
+	float heardTimer = 0.0f;
+
 	APawn* playerPawn;
 
-	UFUNCTION()
-	void OnPawnSeen(APawn* SeenPawn);
 
-	UFUNCTION()
-	void OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volumne);
-
-	void FoundPlayer();
 };
