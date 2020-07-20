@@ -16,6 +16,8 @@ AMPlayerCharacter::AMPlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
+
+	hasTreasure = false;
 }
 
 // Called when the game starts or when spawned

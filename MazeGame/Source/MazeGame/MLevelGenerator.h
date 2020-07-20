@@ -40,13 +40,18 @@ protected:
 
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Wall")
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor>  wall = nullptr;
-	UPROPERTY(EditDefaultsOnly, Category = "Wall")
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor>  outerWall = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
+	TSubclassOf<AActor>  floor = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
+	TSubclassOf<AActor> entrance = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
+		TSubclassOf<AActor> enemy = nullptr;
 
 	int minSize = 0;
 	UPROPERTY(EditAnywhere, Category = "Setup")

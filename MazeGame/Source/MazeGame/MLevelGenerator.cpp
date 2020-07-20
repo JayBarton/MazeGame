@@ -4,11 +4,13 @@
 #include "MLevelGenerator.h"
 #include "Math/UnrealMathUtility.h" 
 
+
+#include "Engine/World.h" 
 // Sets default values
 AMLevelGenerator::AMLevelGenerator()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -60,24 +62,6 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 			{
 				cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
 			}
-
-		/*	if (position.Y - 2 >= minSize && position.Y != 6 && position.Y != 8)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count - 1]);
-			}
-			if (position.Y + 2 < maxSize && position.Y != 6 && position.Y != 8)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count + 1]);
-			}
-			if (position.X - 2 >= minSize && position.X != 6 && position.X != 8)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count - 1 * maxSize * 0.5f]);
-			}
-			if (position.X + 2 < maxSize && position.X != 6 && position.X != 8)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
-			}*/
-			//UE_LOG(LogTemp, Warning, TEXT("%i, %i, %i"), count, i, c);
 
 			count++;
 		}
@@ -227,54 +211,40 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
 
-	//FVector location(gridStartX - (p.X * distanceBetweenCells), gridStartY - (p.Y * distanceBetweenCells), wallFloor);
-
 	//Outer walls
 	//Will need to rework this at some point so that I can create an entrance
 	FVector location1(-startPosition, -startPosition, wallFloor);
-	AActor* wall1 = GetWorld()->SpawnActor<AActor>(outerWall, location1, FRotator::ZeroRotator, SpawnParams);
+	AActor* outer = GetWorld()->SpawnActor<AActor>(outerWall, location1, FRotator::ZeroRotator, SpawnParams);
 
 	float halfSize = distanceBetweenCells * 0.5f;
 
 	for (int i = 0; i < maxSize; i++)
 	{
-		UInstancedStaticMeshComponent* helpme = wall1->FindComponentByClass<UInstancedStaticMeshComponent>();
+		UInstancedStaticMeshComponent* newWall = outer->FindComponentByClass<UInstancedStaticMeshComponent>();
 
 		FVector location(startPosition - (i * halfSize), startPosition + halfSize, 0.0f);
-		helpme->AddInstance(FTransform(location));
+		newWall->AddInstance(FTransform(location));
 
 		location = FVector((startPosition + halfSize) - (i * halfSize), startPosition - (halfSize * (maxSize - 1)), 0.0f);
-		helpme->AddInstance(FTransform(location));
+		newWall->AddInstance(FTransform(location));
 		location = FVector(startPosition - (halfSize * (maxSize - 1)), startPosition - (i * halfSize), 0.0f);
-		helpme->AddInstance(FTransform(location));
+		newWall->AddInstance(FTransform(location));
 		location = FVector(startPosition + halfSize, startPosition + halfSize - (i * halfSize), 0.0f);
-
-		helpme->AddInstance(FTransform(location));
+		newWall->AddInstance(FTransform(location));
 	}
 
-	//Original
-	/*for (int i = 0; i < maxSize; i++)
-	{
-		FVector location(gridStartX - (i * distanceBetweenCells), gridStartY + distanceBetweenCells, wallFloor);
-		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
+	//Floor
+	AActor* theFloor = GetWorld()->SpawnActor<AActor>(floor, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParams);
+	float floorSize = maxSize / 5;
+	theFloor->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
 
-		location = FVector((gridStartX + distanceBetweenCells) - (i * distanceBetweenCells), gridStartY - (distanceBetweenCells * (maxSize - 1)), wallFloor);
-		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
+	//Entrance
+	float entrancePosition = startPosition - 100;
+	AActor* theEntrance = GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
 
-		location = FVector(gridStartX - (distanceBetweenCells * (maxSize - 1)), gridStartY - (i * distanceBetweenCells), wallFloor);
-		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
-
-		location = FVector(gridStartX + distanceBetweenCells, gridStartY + distanceBetweenCells - (i * distanceBetweenCells), wallFloor);
-		GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
-	}*/
+	//Enemy
+	//Currently not working
+	//GetWorld()->SpawnActor<AActor>(enemy, FVector(-600, -200, 108), FRotator::ZeroRotator, SpawnParams);
 }
 
-
-
-// Called every frame
-void AMLevelGenerator::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

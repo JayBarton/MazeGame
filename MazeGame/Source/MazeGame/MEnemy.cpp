@@ -6,12 +6,12 @@
 
 #include "Perception/PawnSensingComponent.h"
 
-#include "Blueprint/AIBlueprintHelperLibrary.h" 
-#include "NavigationSystem.h" 
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "NavigationSystem.h"
 
 #include "DrawDebugHelpers.h"
 
-#include "Kismet/GameplayStatics.h" 
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMEnemy::AMEnemy()
@@ -40,6 +40,7 @@ void AMEnemy::Tick(float DeltaTime)
 	FVector2D playerPosition(playerPawn->GetActorLocation().X, playerPawn->GetActorLocation().Y);
 	if (foundPlayer)
 	{
+
 		FollowPlayer(playerPosition);
 	}
 	else
@@ -116,7 +117,6 @@ void AMEnemy::Wander(FVector2D& currentPosition, FVector2D& playerPosition)
 	else
 	{
 		GetForwardDirection();
-
 		AddMovementInput(GetActorForwardVector(), 1.0f);
 	}
 }
