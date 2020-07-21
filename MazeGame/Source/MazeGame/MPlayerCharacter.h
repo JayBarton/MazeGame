@@ -42,7 +42,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	TSubclassOf<UCameraShake> CameraBob;
 
-	UPROPERTY(EditAnywhere, Category = "Test")
-		bool hasTreasure;
+	UPROPERTY(BlueprintReadonly, Category = "Test")
+	bool bHasTreasure;
 
 };

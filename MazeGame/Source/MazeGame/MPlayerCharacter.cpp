@@ -17,7 +17,7 @@ AMPlayerCharacter::AMPlayerCharacter()
 
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
 
-	hasTreasure = false;
+	bHasTreasure = false;
 }
 
 // Called when the game starts or when spawned

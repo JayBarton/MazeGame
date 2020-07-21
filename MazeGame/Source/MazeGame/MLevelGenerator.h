@@ -43,15 +43,21 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor>  wall = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor>  outerWall = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor>  floor = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor> entrance = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
-		TSubclassOf<AActor> enemy = nullptr;
+	TSubclassOf<AActor> enemy = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
+	TSubclassOf<AActor> treasure = nullptr;
 
 	int minSize = 0;
 	UPROPERTY(EditAnywhere, Category = "Setup")

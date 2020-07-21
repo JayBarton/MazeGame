@@ -240,11 +240,14 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 
 	//Entrance
 	float entrancePosition = startPosition - 100;
-	AActor* theEntrance = GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
+	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
 
 	//Enemy
 	//Currently not working
 	//GetWorld()->SpawnActor<AActor>(enemy, FVector(-600, -200, 108), FRotator::ZeroRotator, SpawnParams);
+	
+	//Hard set for now
+	GetWorld()->SpawnActor<AActor>(treasure, FVector(200, 200, 100), FRotator::ZeroRotator, SpawnParams);
 }
 
 
