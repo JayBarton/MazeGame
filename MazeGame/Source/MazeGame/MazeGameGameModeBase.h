@@ -13,5 +13,11 @@ UCLASS()
 class MAZEGAME_API AMazeGameGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	void CompleteLevel();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
+	void OnLevelCompleted();
 	
 };

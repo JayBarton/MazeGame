@@ -23,6 +23,7 @@ AMEnemy::AMEnemy()
 	//Guard will not hear if they have already seen
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AMEnemy::OnPawnSeen);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AMEnemy::OnNoiseHeard);
+
 }
 
 // Called when the game starts or when spawned

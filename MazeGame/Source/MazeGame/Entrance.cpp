@@ -5,6 +5,7 @@
 #include "MPlayerCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/DecalComponent.h"
+#include "MazeGameGameModeBase.h"
 
 // Sets default values
 AEntrance::AEntrance()
@@ -38,7 +39,11 @@ void AEntrance::HandleOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		if (player->bHasTreasure)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Got it"));
-
+			AMazeGameGameModeBase* GM = Cast<AMazeGameGameModeBase>(GetWorld()->GetAuthGameMode());
+			if (GM)
+			{
+				GM->CompleteLevel();
+			}
 		}
 		else
 		{
