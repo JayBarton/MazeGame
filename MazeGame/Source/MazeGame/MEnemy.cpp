@@ -13,6 +13,8 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
+
 // Sets default values
 AMEnemy::AMEnemy()
 {
@@ -66,6 +68,8 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 			AI->StopMovement();
 		}
 		Reset(currentPosition);
+
+		GetCharacterMovement()->MaxWalkSpeed = 300;
 
 		UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
 	}
@@ -384,6 +388,7 @@ void AMEnemy::FoundPlayer()
 		{
 			AI->StopMovement();
 		}
+		GetCharacterMovement()->MaxWalkSpeed = 500;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), playerPawn);
 	}
 }

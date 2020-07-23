@@ -39,13 +39,13 @@ void AMTreasure::PlayEffects()
 void AMTreasure::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-	PlayEffects();
 
 
 	AMPlayerCharacter* player = Cast<AMPlayerCharacter>(OtherActor);
 	if (player)
 	{
 		player->bHasTreasure = true;
+		PlayEffects();
 
 		Destroy();
 	}
