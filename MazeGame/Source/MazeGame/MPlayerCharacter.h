@@ -36,13 +36,32 @@ public:
 	UFUNCTION()
 	void MoveRight(float Value);
 
+	//Sets up player being chased
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	UPawnNoiseEmitterComponent* NoiseEmitterComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	TSubclassOf<UCameraShake> CameraBob;
 
-	UPROPERTY(BlueprintReadonly, Category = "Test")
+	UPROPERTY(BlueprintReadonly, Category = "Player")
 	bool bHasTreasure;
+	UPROPERTY(BlueprintReadonly, Category = "Player")
+	bool bChased;
 
+	UPROPERTY(BlueprintReadonly, Category = "Player")
+	float walkSpeed = 500.0f;
+	UPROPERTY(BlueprintReadonly, Category = "Player")
+	float maxRunSpeed = 700.0f;
+	UPROPERTY(BlueprintReadonly, Category = "Player")
+	float currentRunSpeed = 700.0f;
+
+	UPROPERTY(BlueprintReadonly, Category = "Player")
+	float stamina = 100.0f;
+	//Rate that running drains stamina
+	UPROPERTY(EditAnywhere, Category = "Player")
+	float runDrain = 5.0f;
+	//rate that stamina recovers
+	UPROPERTY(EditAnywhere, Category = "Player")
+	float recoverGain = 2.5f;
 };

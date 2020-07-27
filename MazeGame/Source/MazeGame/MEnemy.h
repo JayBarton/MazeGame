@@ -7,7 +7,7 @@
 #include "MEnemy.generated.h"
 
 class UPawnSensingComponent;
-
+class AMPlayerCharacter;
 
 UCLASS()
 class MAZEGAME_API AMEnemy : public ACharacter
@@ -71,7 +71,7 @@ public:
 	float seenTimer = 0.0f;
 	float heardTimer = 0.0f;
 
-	APawn* playerPawn;
+	AMPlayerCharacter* thePlayer;
 
 
 };

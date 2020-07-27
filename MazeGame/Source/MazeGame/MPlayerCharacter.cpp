@@ -7,17 +7,22 @@
 #include "Components/PawnNoiseEmitterComponent.h"
 
 #include "Kismet/GameplayStatics.h" 
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 // Sets default values
 AMPlayerCharacter::AMPlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
 
 	bHasTreasure = false;
+	bChased = false;
+
+	currentRunSpeed = maxRunSpeed;
+	stamina = 100;
 }
 
 // Called when the game starts or when spawned
@@ -32,6 +37,19 @@ void AMPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bChased)
+	{
+		stamina -= runDrain * DeltaTime;
+
+		stamina = FMath::Clamp(stamina, 0.0f, 100.0f);
+		currentRunSpeed = FMath::Lerp(walkSpeed, maxRunSpeed, stamina / 100);
+	}
+	else
+	{
+		stamina += recoverGain * DeltaTime;
+
+		stamina = FMath::Clamp(stamina, 0.0f, 100.0f);
+	}
 }
 
 // Called to bind functionality to input
@@ -51,6 +69,23 @@ void AMPlayerCharacter::MoveForward(float Value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	AddMovementInput(Direction, Value);
+
+	if (bChased)
+	{
+		if (Value > 0)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = currentRunSpeed;
+		}
+		else
+		{
+			GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
+		}
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
+	}
+	
 
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraBob, Value);
 	

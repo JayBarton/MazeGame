@@ -15,6 +15,8 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "MPlayerCharacter.h"
+
 // Sets default values
 AMEnemy::AMEnemy()
 {
@@ -32,7 +34,7 @@ AMEnemy::AMEnemy()
 void AMEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	thePlayer = Cast<AMPlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 }
 
 // Called every frame
@@ -40,7 +42,7 @@ void AMEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector2D playerPosition(playerPawn->GetActorLocation().X, playerPawn->GetActorLocation().Y);
+	FVector2D playerPosition(thePlayer->GetActorLocation().X, thePlayer->GetActorLocation().Y);
 	if (foundPlayer)
 	{
 
@@ -70,6 +72,7 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 		Reset(currentPosition);
 
 		GetCharacterMovement()->MaxWalkSpeed = 300;
+		thePlayer->bChased = false;
 
 		UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
 	}
@@ -114,7 +117,7 @@ void AMEnemy::Wander(FVector2D& currentPosition, FVector2D& playerPosition)
 	if ((currentPosition - playerPosition).Size() > 2000.0f)
 	{
 		moveToPosition = true;
-		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), playerPawn);
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), thePlayer);
 		UE_LOG(LogTemp, Warning, TEXT("Seeking"));
 
 	}
@@ -389,7 +392,8 @@ void AMEnemy::FoundPlayer()
 			AI->StopMovement();
 		}
 		GetCharacterMovement()->MaxWalkSpeed = 500;
-		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), playerPawn);
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), thePlayer);
+		thePlayer->bChased = true;
 	}
 }
 
