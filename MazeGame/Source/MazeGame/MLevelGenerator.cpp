@@ -30,7 +30,7 @@ void AMLevelGenerator::BeginPlay()
 
 	RemoveRandomWalls(wallGrid);
 
-	SetWalls(wallGrid);
+//	SetWalls(wallGrid);
 }
 
 void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)

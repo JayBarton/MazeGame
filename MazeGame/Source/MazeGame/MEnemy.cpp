@@ -28,6 +28,8 @@ AMEnemy::AMEnemy()
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AMEnemy::OnPawnSeen);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AMEnemy::OnNoiseHeard);
 
+	halfAttackLength = attackLength * 0.5f;
+	attackTime = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -45,8 +47,37 @@ void AMEnemy::Tick(float DeltaTime)
 	FVector2D playerPosition(thePlayer->GetActorLocation().X, thePlayer->GetActorLocation().Y);
 	if (foundPlayer)
 	{
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), thePlayer);
 
 		FollowPlayer(playerPosition);
+	}
+	else if (attacking)
+	{
+		attackTime += DeltaTime;
+		if (attackTime > halfAttackLength)
+		{
+			FHitResult OutHit;
+
+			FVector Start = GetActorLocation();
+
+			FVector ForwardVector = GetActorForwardVector();
+			FVector End = ((ForwardVector * attackRange) + Start);
+			FCollisionQueryParams CollisionParams;
+			CollisionParams.AddIgnoredActor(this);
+
+			DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
+
+			if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Pawn, CollisionParams))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AERET"))
+			}
+		}
+		if (attackTime > attackLength)
+		{
+			attacking = false;
+			FoundPlayer();
+			attackTime = 0.0f;
+		}
 	}
 	else
 	{
@@ -54,6 +85,10 @@ void AMEnemy::Tick(float DeltaTime)
 	}
 
 	seenTimer += DeltaTime;
+	if (seenTimer >= 2.0f)
+	{
+		canSee = false;
+	}
 	heardTimer += DeltaTime;
 }
 
@@ -61,20 +96,46 @@ void AMEnemy::Tick(float DeltaTime)
 void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 {
 	FVector2D currentPosition(GetActorLocation().X, GetActorLocation().Y);
+	float distance = (currentPosition - playerPosition).Size();
+	UE_LOG(LogTemp, Warning, TEXT("%f"), distance);
 
-	if ((currentPosition - playerPosition).Size() > 1000.0f)
+
+	if (distance > 1000.0f)
 	{
-		foundPlayer = false;
-		if (AController* AI = GetController())
+		if (!canSee)
 		{
-			AI->StopMovement();
+			foundPlayer = false;
+			if (AController* AI = GetController())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("1"));
+
+				AI->StopMovement();
+			}
+			Reset(currentPosition);
+
+			GetCharacterMovement()->MaxWalkSpeed = 300;
+			thePlayer->bChased = false;
+
+			UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
 		}
-		Reset(currentPosition);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("what's goin on"))
 
-		GetCharacterMovement()->MaxWalkSpeed = 300;
-		thePlayer->bChased = false;
+			if (distance < attackDistance)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("help3"))
+					foundPlayer = false;
+				attacking = true;
+				if (AController* AI = GetController())
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Attack"));
+					UE_LOG(LogTemp, Warning, TEXT("2"));
 
-		UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
+					AI->StopMovement();
+				}
+			}
 	}
 }
 
@@ -99,6 +160,8 @@ void AMEnemy::MoveBackToPlayer(FVector2D& currentPosition, FVector2D& playerPosi
 	{
 		if (AController* AI = GetController())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("3"));
+
 			AI->StopMovement();
 		}
 
@@ -347,7 +410,6 @@ void AMEnemy::OnPawnSeen(APawn* SeenPawn)
 {
 	if (SeenPawn)
 	{
-
 		if (seenTimer >= 2.0f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("I see you"));
@@ -355,6 +417,7 @@ void AMEnemy::OnPawnSeen(APawn* SeenPawn)
 			heardTimer = 0.0f;
 
 		}
+		canSee = true;
 		seenTimer = 0.0f;
 
 		FoundPlayer();
@@ -377,6 +440,7 @@ void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, floa
 
 	}
 	heardTimer = 0.0f;
+	canSee = false;
 
 	FoundPlayer();
 
@@ -384,14 +448,19 @@ void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, floa
 
 void AMEnemy::FoundPlayer()
 {
-	if (!foundPlayer)
+
+	if (!foundPlayer && !attacking)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("aaaaaaAAAAAAHHHHH"));
+
 		foundPlayer = true;
 		if (AController* AI = GetController())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("4"));
+
 			AI->StopMovement();
 		}
-		GetCharacterMovement()->MaxWalkSpeed = 500;
+		GetCharacterMovement()->MaxWalkSpeed = 600;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), thePlayer);
 		thePlayer->bChased = true;
 	}

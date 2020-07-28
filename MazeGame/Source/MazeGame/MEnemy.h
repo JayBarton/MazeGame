@@ -67,9 +67,24 @@ public:
 	bool moveToPosition = false;
 
 	bool foundPlayer = false;
+	UPROPERTY(BlueprintReadonly, Category = "Attack")
+	bool attacking = false;
+
+	bool canSee = false;
 
 	float seenTimer = 0.0f;
 	float heardTimer = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float attackDistance = 150.0f;
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float attackRange = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float attackLength = 1.7f;
+	float halfAttackLength = 0.0f;
+
+	float attackTime = 0.0f;
 
 	AMPlayerCharacter* thePlayer;
 
