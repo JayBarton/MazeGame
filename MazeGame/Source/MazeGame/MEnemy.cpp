@@ -47,8 +47,6 @@ void AMEnemy::Tick(float DeltaTime)
 	FVector2D playerPosition(thePlayer->GetActorLocation().X, thePlayer->GetActorLocation().Y);
 	if (foundPlayer)
 	{
-		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), thePlayer);
-
 		FollowPlayer(playerPosition);
 	}
 	else if (attacking)
@@ -58,18 +56,22 @@ void AMEnemy::Tick(float DeltaTime)
 		{
 			FHitResult OutHit;
 
-			FVector Start = GetActorLocation();
 
 			FVector ForwardVector = GetActorForwardVector();
+			FVector Start = GetActorLocation() + 80 * ForwardVector;
+
 			FVector End = ((ForwardVector * attackRange) + Start);
 			FCollisionQueryParams CollisionParams;
 			CollisionParams.AddIgnoredActor(this);
 
 			DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-
-			if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Pawn, CollisionParams))
+			auto shape = FCollisionShape::MakeBox(FVector(100, 100, 100));
+			DrawDebugBox(GetWorld(), Start, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
+			DrawDebugBox(GetWorld(), End, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
+			if(GetWorld()->SweepSingleByChannel(OutHit, Start, End, FQuat::Identity, ECC_GameTraceChannel1, shape, CollisionParams))
+			//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel1, CollisionParams))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("AERET"))
+				UE_LOG(LogTemp, Warning, TEXT("HIT"))
 			}
 		}
 		if (attackTime > attackLength)
@@ -97,8 +99,6 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 {
 	FVector2D currentPosition(GetActorLocation().X, GetActorLocation().Y);
 	float distance = (currentPosition - playerPosition).Size();
-	UE_LOG(LogTemp, Warning, TEXT("%f"), distance);
-
 
 	if (distance > 1000.0f)
 	{
@@ -107,8 +107,6 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 			foundPlayer = false;
 			if (AController* AI = GetController())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("1"));
-
 				AI->StopMovement();
 			}
 			Reset(currentPosition);
@@ -121,17 +119,13 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("what's goin on"))
-
 			if (distance < attackDistance)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("help3"))
-					foundPlayer = false;
+				foundPlayer = false;
 				attacking = true;
 				if (AController* AI = GetController())
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Attack"));
-					UE_LOG(LogTemp, Warning, TEXT("2"));
 
 					AI->StopMovement();
 				}
@@ -160,8 +154,6 @@ void AMEnemy::MoveBackToPlayer(FVector2D& currentPosition, FVector2D& playerPosi
 	{
 		if (AController* AI = GetController())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("3"));
-
 			AI->StopMovement();
 		}
 
@@ -448,11 +440,8 @@ void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, floa
 
 void AMEnemy::FoundPlayer()
 {
-
 	if (!foundPlayer && !attacking)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("aaaaaaAAAAAAHHHHH"));
-
 		foundPlayer = true;
 		if (AController* AI = GetController())
 		{
