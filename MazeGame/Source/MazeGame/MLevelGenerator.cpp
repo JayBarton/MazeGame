@@ -3,9 +3,9 @@
 
 #include "MLevelGenerator.h"
 #include "Math/UnrealMathUtility.h" 
-
-
+#include "Kismet/GameplayStatics.h" 
 #include "Engine/World.h" 
+#include "MGameInstance.h"
 // Sets default values
 AMLevelGenerator::AMLevelGenerator()
 {
@@ -19,15 +19,37 @@ void AMLevelGenerator::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (auto instance = Cast<UMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
+	{
+		int type = instance->mazeType;
+		if (type >= 0)
+		{
+			mazeType = instance->mazeType;
+		}
+		else
+		{
+			mazeType = FMath::RandRange(0, 1);
+		}
+	}
+	else
+	{
+		mazeType = 0;
+	}
+
 	TArray<Cell> cellGrid;
 	TMap<FVector2D, bool> wallGrid;
 	cellGrid.Init(Cell(), (maxSize * maxSize) * 0.25f);
 	SetUpGrids(cellGrid, wallGrid);
 
-	//Prim(cellGrid, wallGrid);
-
-	BackTracker(cellGrid, wallGrid);
-
+	if (mazeType == 0)
+	{
+		BackTracker(cellGrid, wallGrid);
+		UE_LOG(LogTemp, Warning, TEXT("BACK"));
+	}
+	else
+	{
+		Prim(cellGrid, wallGrid);
+	}
 	RemoveRandomWalls(wallGrid);
 
 	SetWalls(wallGrid);
@@ -46,27 +68,65 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 			//Set grid neighbours
 			cellGrid[count].neighbours.Reserve(4);
 			FVector2D position = cellGrid[count].position;
-			if (position.Y - 2 >= minSize)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count - 1]);
-			}
-			if (position.Y + 2 < maxSize)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count + 1]);
-			}
-			if (position.X - 2 >= minSize)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count - 1 * maxSize * 0.5f]);
-			}
-			if (position.X + 2 < maxSize)
-			{
-				cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
-			}
 
+
+			if (i == 8 && c == 8)
+			{
+				cellGrid[count].neighbours.Add(&cellGrid[count - 2]);
+				cellGrid[count].neighbours.Add(&cellGrid[count + 2]);
+				cellGrid[count].neighbours.Add(&cellGrid[count - 2 * maxSize * 0.5f]);
+				cellGrid[count].neighbours.Add(&cellGrid[count + 2 * maxSize * 0.5f]);
+			}
+			else
+			{
+				if (position.Y - 2 >= minSize)
+				{
+					cellGrid[count].neighbours.Add(&cellGrid[count - 1]);
+				}
+				if (position.Y + 2 < maxSize)
+				{
+					cellGrid[count].neighbours.Add(&cellGrid[count + 1]);
+				}
+				if (position.X - 2 >= minSize)
+				{
+					cellGrid[count].neighbours.Add(&cellGrid[count - 1 * maxSize * 0.5f]);
+				}
+				if (position.X + 2 < maxSize)
+				{
+					cellGrid[count].neighbours.Add(&cellGrid[count + 1 * maxSize * 0.5f]);
+				}
+			}
 			count++;
 		}
 	}
 
+	count = 0;
+	for (int i = minSize; i < maxSize; i += 2)
+	{
+		for (int c = minSize; c < maxSize; c += 2)
+		{
+			//8,8 is the center with a size of 20
+			if (count == 44)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%i, %i"), i, c);
+				UE_LOG(LogTemp, Warning, TEXT("%i"), count - 2);
+				UE_LOG(LogTemp, Warning, TEXT("%i"), count + 2);
+				UE_LOG(LogTemp, Warning, TEXT("%f"), count - 2 * maxSize * 0.5f);
+				UE_LOG(LogTemp, Warning, TEXT("%f"), count + 2 * maxSize * 0.5f);
+
+				for (int q = 0; q < cellGrid[count].neighbours.Num(); q++)
+				{
+					float x = cellGrid[count].neighbours[q]->position.X;
+					float y = cellGrid[count].neighbours[q]->position.Y;
+					UE_LOG(LogTemp, Warning, TEXT("%f, %f"), x, y);
+					float startPosition = (maxSize - 2) * distanceBetweenCells * 0.5f;
+					FVector2D p(x, y);
+					FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), wallFloor);
+				}
+			}
+			count++;
+		}
+	}
 
 	for (int i = minSize; i < maxSize - 1; i++)
 	{
@@ -210,6 +270,15 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), wallFloor);
 		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
+	
+	/*float startPosition = (maxSize - 2) * distanceBetweenCells * 0.5f;
+	FVector2D p(9, 9);
+	FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), wallFloor);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);*/
 
 	//Outer walls
 	//Will need to rework this at some point so that I can create an entrance

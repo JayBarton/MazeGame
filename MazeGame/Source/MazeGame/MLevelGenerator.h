@@ -63,6 +63,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	int maxSize = 10;
 
+	int mazeType;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float wallFloor = 50.0f;
 
