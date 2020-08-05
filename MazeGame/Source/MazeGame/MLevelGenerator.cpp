@@ -70,14 +70,14 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 			FVector2D position = cellGrid[count].position;
 
 
-			if (i == 8 && c == 8)
+			//if (i == 8 && c == 8)
 			{
-				cellGrid[count].neighbours.Add(&cellGrid[count - 2]);
+				/*cellGrid[count].neighbours.Add(&cellGrid[count - 2]);
 				cellGrid[count].neighbours.Add(&cellGrid[count + 2]);
 				cellGrid[count].neighbours.Add(&cellGrid[count - 2 * maxSize * 0.5f]);
-				cellGrid[count].neighbours.Add(&cellGrid[count + 2 * maxSize * 0.5f]);
+				cellGrid[count].neighbours.Add(&cellGrid[count + 2 * maxSize * 0.5f]);*/
 			}
-			else
+		//	else
 			{
 				if (position.Y - 2 >= minSize)
 				{
@@ -100,7 +100,7 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 		}
 	}
 
-	count = 0;
+/*	count = 0;
 	for (int i = minSize; i < maxSize; i += 2)
 	{
 		for (int c = minSize; c < maxSize; c += 2)
@@ -126,7 +126,7 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 			}
 			count++;
 		}
-	}
+	}*/
 
 	for (int i = minSize; i < maxSize - 1; i++)
 	{

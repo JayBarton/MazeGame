@@ -67,27 +67,27 @@ void AMPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AMPlayerCharacter::MoveForward(float Value)
 {
-	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	AddMovementInput(Direction, Value);
-
-	if (bChased)
+	if (Value != 0)
 	{
-		if (Value > 0)
+		AddMovementInput(GetActorForwardVector(), Value);
+		if (bChased)
 		{
-			GetCharacterMovement()->MaxWalkSpeed = currentRunSpeed;
+			if (Value > 0)
+			{
+				GetCharacterMovement()->MaxWalkSpeed = currentRunSpeed;
+			}
+			else
+			{
+				GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
+			}
 		}
 		else
 		{
 			GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
 		}
-	}
-	else
-	{
-		GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
-	}
-	
 
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraBob, Value);
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraBob, Value);
+	}
 	
 }
 
@@ -113,6 +113,9 @@ void AMPlayerCharacter::MoveRight(float Value)
 	{
 		AddMovementInput(Direction, Value);
 	}*/
-	AddMovementInput(Direction, Value);
+	if (Value != 0)
+	{
+		AddMovementInput(GetActorRightVector(), Value);
+	}
 }
 
