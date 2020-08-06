@@ -52,7 +52,7 @@ void AMLevelGenerator::BeginPlay()
 	}
 	RemoveRandomWalls(wallGrid);
 
-	SetWalls(wallGrid);
+	SetWalls(cellGrid, wallGrid);
 }
 
 void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
@@ -259,7 +259,7 @@ void AMLevelGenerator::RemoveRandomWalls(TMap<FVector2D, bool>& wallGrid)
 	}
 }
 
-void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
+void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid)
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -269,6 +269,13 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 		FVector2D p = cell.Key;
 		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), wallFloor);
 		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
+	}
+
+	for(int i = 0; i < cellGrid.Num(); i +=2)
+	{
+		FVector2D p = cellGrid[i].position;
+		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 250);
+		AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, FRotator::ZeroRotator, SpawnParams);
 	}
 	
 	/*float startPosition = (maxSize - 2) * distanceBetweenCells * 0.5f;
@@ -310,6 +317,7 @@ void AMLevelGenerator::SetWalls(TMap<FVector2D, bool>& wallGrid)
 	//Entrance
 	float entrancePosition = startPosition - 100;
 	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
+	UE_LOG(LogTemp, Warning, TEXT("%f"), startPosition);
 
 	//Enemy
 	//Currently not working

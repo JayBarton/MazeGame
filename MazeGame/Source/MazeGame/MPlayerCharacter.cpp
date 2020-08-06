@@ -8,6 +8,8 @@
 
 #include "Kismet/GameplayStatics.h" 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 
 
 // Sets default values
@@ -17,6 +19,11 @@ AMPlayerCharacter::AMPlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
+
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	CameraComponent->SetupAttachment(GetCapsuleComponent());
+	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
+	CameraComponent->bUsePawnControlRotation = true;
 
 	bHasTreasure = false;
 	bChased = false;

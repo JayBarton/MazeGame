@@ -8,6 +8,8 @@
 
 class UCameraShake;
 class UPawnNoiseEmitterComponent;
+class UCameraComponent;
+
 
 UCLASS()
 class MAZEGAME_API AMPlayerCharacter : public ACharacter
@@ -21,6 +23,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* CameraComponent;
 
 public:	
 	// Called every frame

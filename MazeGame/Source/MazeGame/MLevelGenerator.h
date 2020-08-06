@@ -32,7 +32,7 @@ protected:
 
 	void RemoveRandomWalls(TMap<FVector2D, bool>& wallGrid);
 
-	void SetWalls(TMap<FVector2D, bool>& wallGrid);
+	void SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
 
 	void BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
 
@@ -58,6 +58,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor> treasure = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
+	TSubclassOf<AActor> light = nullptr;
 
 	int minSize = 0;
 	UPROPERTY(EditAnywhere, Category = "Setup")
