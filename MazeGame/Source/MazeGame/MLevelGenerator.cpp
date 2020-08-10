@@ -44,7 +44,6 @@ void AMLevelGenerator::BeginPlay()
 	if (mazeType == 0)
 	{
 		BackTracker(cellGrid, wallGrid);
-		UE_LOG(LogTemp, Warning, TEXT("BACK"));
 	}
 	else
 	{
@@ -271,22 +270,48 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
 
+	int side = 0;
+	//Lights
 	for(int i = 0; i < cellGrid.Num(); i +=2)
 	{
 		FVector2D p = cellGrid[i].position;
 		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 250);
-		AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, FRotator::ZeroRotator, SpawnParams);
+		FRotator rotation = FRotator::ZeroRotator;
+		if (side == 0)
+		{
+			if (wallGrid.Contains(FVector2D(p.X, p.Y + 1)) || p.Y >= maxSize)
+			{
+				location.Y -= 100;
+				rotation = FRotator(0.0f, 0.0f, 180.0f);
+				AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, rotation, SpawnParams);
+				side = 1;
+			}
+			else if (wallGrid.Contains(FVector2D(p.X + 1, p.Y)) || p.X >= maxSize)
+			{
+				location.X -= 100;
+				rotation = FRotator(0.0f, 90.0f, 0.0f);
+				AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, rotation, SpawnParams);
+			//	side = 1;
+			}
+		}
+		else if (side == 1)
+		{
+			if (wallGrid.Contains(FVector2D(p.X, p.Y - 1)) || p.Y <= 0)
+			{
+				location.Y += 100;
+				AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, rotation, SpawnParams);
+				side = 0;
+			}
+			else if (wallGrid.Contains(FVector2D(p.X - 1, p.Y)) || p.X <= 0)
+			{
+				location.X += 100;
+				rotation = FRotator(0.0f, -90.0f, 0.0f);
+				AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, rotation, SpawnParams);
+				//side = 0;
+			}
+		}
 	}
 	
-	/*float startPosition = (maxSize - 2) * distanceBetweenCells * 0.5f;
-	FVector2D p(9, 9);
-	FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), wallFloor);
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);*/
-
 	//Outer walls
 	//Will need to rework this at some point so that I can create an entrance
 	FVector location1(-startPosition, -startPosition, wallFloor);
