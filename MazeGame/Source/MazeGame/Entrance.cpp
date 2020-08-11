@@ -42,7 +42,7 @@ void AEntrance::HandleOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 			AMazeGameGameModeBase* GM = Cast<AMazeGameGameModeBase>(GetWorld()->GetAuthGameMode());
 			if (GM)
 			{
-				GM->CompleteLevel();
+				GM->CompleteLevel(true);
 			}
 		}
 		else

@@ -15,9 +15,11 @@ class MAZEGAME_API AMazeGameGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	void CompleteLevel();
+	void CompleteLevel(bool success, APawn* InstigatorPawn = nullptr);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
-	void OnLevelCompleted();
+	void OnLevelCompleted(bool success);
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Pointless")
+	TSubclassOf<AActor>  view = nullptr;
 };

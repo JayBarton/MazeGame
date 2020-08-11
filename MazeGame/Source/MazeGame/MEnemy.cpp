@@ -17,6 +17,9 @@
 
 #include "MPlayerCharacter.h"
 
+#include "MazeGameGameModeBase.h"
+
+
 // Sets default values
 AMEnemy::AMEnemy()
 {
@@ -71,7 +74,12 @@ void AMEnemy::Tick(float DeltaTime)
 			if(GetWorld()->SweepSingleByChannel(OutHit, Start, End, FQuat::Identity, ECC_GameTraceChannel1, shape, CollisionParams))
 			//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel1, CollisionParams))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HIT"))
+				AMazeGameGameModeBase* GM = Cast<AMazeGameGameModeBase>(GetWorld()->GetAuthGameMode());
+				if (GM)
+				{
+					GM->CompleteLevel(false, this);
+				}
+				//UE_LOG(LogTemp, Warning, TEXT("HIT"))
 			}
 		}
 		if (attackTime > attackLength)

@@ -339,6 +339,9 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 	float floorSize = maxSize / 5;
 	theFloor->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
 
+	AActor* theCeiling = GetWorld()->SpawnActor<AActor>(floor, FVector(0, 0, 350.0f), FRotator::ZeroRotator, SpawnParams);
+	theCeiling->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
+
 	//Entrance
 	float entrancePosition = startPosition - 100;
 	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
