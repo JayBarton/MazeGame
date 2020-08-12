@@ -33,11 +33,11 @@ void AMazeGameGameModeBase::CompleteLevel(bool success, APawn* InstigatorPawn)
         {
             FActorSpawnParameters SpawnParams;
             SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            FVector playerLocation = playerPawn->GetActorLocation();
-            FRotator test = UKismetMathLibrary::FindLookAtRotation(playerLocation, InstigatorPawn->GetActorLocation());
-            AActor* viewActor = GetWorld()->SpawnActor<AActor>(view, playerLocation, test, SpawnParams);
-            UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), viewActor->GetActorLocation().X, viewActor->GetActorLocation().Y, viewActor->GetActorLocation().Z);
-            UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), playerLocation.X, playerLocation.Y, playerLocation.Z);
+            FVector location = InstigatorPawn->GetActorLocation() + InstigatorPawn->GetActorForwardVector() * 300.0f;
+            location.Z += 75.0f;
+            FRotator test = UKismetMathLibrary::FindLookAtRotation(location, InstigatorPawn->GetActorLocation());
+            AActor* viewActor = GetWorld()->SpawnActor<AActor>(view, location, test, SpawnParams);
+
 
             PC->SetViewTargetWithBlend(viewActor, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
         }

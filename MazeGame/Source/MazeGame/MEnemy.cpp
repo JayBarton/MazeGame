@@ -78,8 +78,8 @@ void AMEnemy::Tick(float DeltaTime)
 				if (GM)
 				{
 					GM->CompleteLevel(false, this);
+					victory = true;
 				}
-				//UE_LOG(LogTemp, Warning, TEXT("HIT"))
 			}
 		}
 		if (attackTime > attackLength)

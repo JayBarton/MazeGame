@@ -69,6 +69,8 @@ public:
 	bool foundPlayer = false;
 	UPROPERTY(BlueprintReadonly, Category = "Attack")
 	bool attacking = false;
+	UPROPERTY(BlueprintReadonly, Category = "Attack")
+	bool victory = false;
 
 	bool canSee = false;
 
