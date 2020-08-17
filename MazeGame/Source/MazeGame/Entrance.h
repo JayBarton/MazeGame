@@ -26,7 +26,7 @@ protected:
 	UBoxComponent* OverlapComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UDecalComponent* DecalComp;
+	UStaticMeshComponent* MeshComp;
 
 
 

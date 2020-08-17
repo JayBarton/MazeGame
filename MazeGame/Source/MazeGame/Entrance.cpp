@@ -17,16 +17,16 @@ AEntrance::AEntrance()
 	OverlapComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	OverlapComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	OverlapComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	OverlapComp->SetBoxExtent(FVector(200.0f));
+	OverlapComp->SetBoxExtent(FVector(100.0f));
 	RootComponent = OverlapComp;
 
 	OverlapComp->SetHiddenInGame(false);
 
 	OverlapComp->OnComponentBeginOverlap.AddDynamic(this, &AEntrance::HandleOverlap);
 
-	DecalComp = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComp"));
-	DecalComp->DecalSize = FVector(200.0f);
-	DecalComp->SetupAttachment(RootComponent);
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetupAttachment(RootComponent);
 
 }
 

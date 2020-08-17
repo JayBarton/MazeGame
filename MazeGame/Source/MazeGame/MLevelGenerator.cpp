@@ -272,7 +272,7 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 
 	int side = 0;
 	//Lights
-	for(int i = 0; i < cellGrid.Num(); i +=2)
+	for(int i = 2; i < cellGrid.Num(); i +=2)
 	{
 		FVector2D p = cellGrid[i].position;
 		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 250);
@@ -343,7 +343,7 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 	theCeiling->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
 
 	//Entrance
-	float entrancePosition = startPosition - 100;
+	float entrancePosition = startPosition;
 	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
 	UE_LOG(LogTemp, Warning, TEXT("%f"), startPosition);
 
