@@ -55,36 +55,15 @@ void AMEnemy::Tick(float DeltaTime)
 	else if (attacking)
 	{
 		attackTime += DeltaTime;
-		if (attackTime > halfAttackLength)
+		if (attackTime > halfAttackLength && !attacked)
 		{
-			FHitResult OutHit;
-
-
-			FVector ForwardVector = GetActorForwardVector();
-			FVector Start = GetActorLocation() + 80 * ForwardVector;
-
-			FVector End = ((ForwardVector * attackRange) + Start);
-			FCollisionQueryParams CollisionParams;
-			CollisionParams.AddIgnoredActor(this);
-
-			DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-			auto shape = FCollisionShape::MakeBox(FVector(100, 100, 100));
-			DrawDebugBox(GetWorld(), Start, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
-			DrawDebugBox(GetWorld(), End, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
-			if(GetWorld()->SweepSingleByChannel(OutHit, Start, End, FQuat::Identity, ECC_GameTraceChannel1, shape, CollisionParams))
-			//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel1, CollisionParams))
-			{
-				AMazeGameGameModeBase* GM = Cast<AMazeGameGameModeBase>(GetWorld()->GetAuthGameMode());
-				if (GM)
-				{
-					GM->CompleteLevel(false, this);
-					victory = true;
-				}
-			}
+			Attack();
+			attacked = true;
 		}
 		if (attackTime > attackLength)
 		{
 			attacking = false;
+			attacked = false;
 			FoundPlayer();
 			attackTime = 0.0f;
 		}
@@ -100,6 +79,33 @@ void AMEnemy::Tick(float DeltaTime)
 		canSee = false;
 	}
 	heardTimer += DeltaTime;
+}
+
+void AMEnemy::Attack()
+{
+	FHitResult OutHit;
+
+	FVector ForwardVector = GetActorForwardVector();
+	FVector Start = GetActorLocation() + 80 * ForwardVector;
+
+	FVector End = ((ForwardVector * attackRange) + Start);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
+	auto shape = FCollisionShape::MakeBox(FVector(100, 100, 100));
+	DrawDebugBox(GetWorld(), Start, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
+	DrawDebugBox(GetWorld(), End, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
+	if (GetWorld()->SweepSingleByChannel(OutHit, Start, End, FQuat::Identity, ECC_GameTraceChannel1, shape, CollisionParams))
+		//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel1, CollisionParams))
+	{
+		AMazeGameGameModeBase* GM = Cast<AMazeGameGameModeBase>(GetWorld()->GetAuthGameMode());
+		if (GM)
+		{
+			GM->CompleteLevel(false, this);
+			victory = true;
+		}
+	}
 }
 
 //Set the enemy back to the wander state if they are too far from the player
@@ -123,6 +129,7 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 			thePlayer->bChased = false;
 
 			UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
+			moveToPosition = false;
 		}
 	}
 	else

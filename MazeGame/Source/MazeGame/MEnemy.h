@@ -26,6 +26,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void Attack();
+
 	void WanderAroundPlayer(FVector2D& playerPosition);
 
 	void MoveBackToPlayer(FVector2D& currentPosition, FVector2D& playerPosition);
@@ -73,6 +75,7 @@ public:
 	bool victory = false;
 
 	bool canSee = false;
+	bool attacked = false;
 
 	float seenTimer = 0.0f;
 	float heardTimer = 0.0f;
