@@ -30,10 +30,12 @@ void AMLevelGenerator::BeginPlay()
 		{
 			mazeType = FMath::RandRange(0, 1);
 		}
+		treasureLocation = instance->treasureLocation;
 	}
 	else
 	{
 		mazeType = 0;
+		treasureLocation = 0;
 	}
 
 	TArray<Cell> cellGrid;
@@ -351,8 +353,30 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 	//Currently not working
 	//GetWorld()->SpawnActor<AActor>(enemy, FVector(-600, -200, 108), FRotator::ZeroRotator, SpawnParams);
 	
-	//Hard set for now
-	GetWorld()->SpawnActor<AActor>(treasure, FVector(200, 200, 100), FRotator::ZeroRotator, SpawnParams);
+
+
+
+
+
+	if (treasureLocation == 0)
+	{
+		//Hard set for now
+		GetWorld()->SpawnActor<AActor>(treasure, FVector(200, 200, 100), FRotator::ZeroRotator, SpawnParams);
+	}
+	else if (treasureLocation == 1)
+	{
+		FVector2D p = cellGrid[cellGrid.Num() - 1].position;
+		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 100);
+		GetWorld()->SpawnActor<AActor>(treasure, location, FRotator::ZeroRotator, SpawnParams);
+	}
+	else if (treasureLocation == 2)
+	{
+		int randomIndex = FMath::RandRange(45, cellGrid.Num() - 1);
+
+		FVector2D p = cellGrid[randomIndex].position;
+		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 100);
+		GetWorld()->SpawnActor<AActor>(treasure, location, FRotator::ZeroRotator, SpawnParams);
+	}
 }
 
 

@@ -17,6 +17,8 @@ class MAZEGAME_API UMGameInstance : public UGameInstance
 
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "Player")
-
 	int mazeType = 0;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Player")
+		int treasureLocation = 0;
 };

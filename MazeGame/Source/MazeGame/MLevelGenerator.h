@@ -68,6 +68,8 @@ public:
 
 	int mazeType;
 
+	int treasureLocation;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float wallFloor = 50.0f;
 
