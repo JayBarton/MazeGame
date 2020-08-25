@@ -38,17 +38,11 @@ void AEntrance::HandleOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 	{
 		if (player->bHasTreasure)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Got it"));
 			AMazeGameGameModeBase* GM = Cast<AMazeGameGameModeBase>(GetWorld()->GetAuthGameMode());
 			if (GM)
 			{
 				GM->CompleteLevel(true);
 			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("nope"));
-
 		}
 	}
 }

@@ -92,10 +92,9 @@ void AMEnemy::Attack()
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
 	auto shape = FCollisionShape::MakeBox(FVector(100, 100, 100));
-	DrawDebugBox(GetWorld(), Start, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
-	DrawDebugBox(GetWorld(), End, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
+	//DrawDebugBox(GetWorld(), Start, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
+	//DrawDebugBox(GetWorld(), End, FVector(100, 100, 100), FColor::Red, false, 1.0f, 0.0f, 1.0f);
 	if (GetWorld()->SweepSingleByChannel(OutHit, Start, End, FQuat::Identity, ECC_GameTraceChannel1, shape, CollisionParams))
 		//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel1, CollisionParams))
 	{
@@ -134,17 +133,17 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 	}
 	else
 	{
-			if (distance < attackDistance)
+		if (distance < attackDistance)
+		{
+			foundPlayer = false;
+			attacking = true;
+			if (AController* AI = GetController())
 			{
-				foundPlayer = false;
-				attacking = true;
-				if (AController* AI = GetController())
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Attack"));
+				UE_LOG(LogTemp, Warning, TEXT("Attack"));
 
-					AI->StopMovement();
-				}
+				AI->StopMovement();
 			}
+		}
 	}
 }
 
@@ -172,7 +171,7 @@ void AMEnemy::MoveBackToPlayer(FVector2D& currentPosition, FVector2D& playerPosi
 			AI->StopMovement();
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Wandering"));
+		//UE_LOG(LogTemp, Warning, TEXT("Wandering"));
 
 		Reset(currentPosition);
 
@@ -188,7 +187,7 @@ void AMEnemy::Wander(FVector2D& currentPosition, FVector2D& playerPosition)
 	{
 		moveToPosition = true;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), thePlayer);
-		UE_LOG(LogTemp, Warning, TEXT("Seeking"));
+	//	UE_LOG(LogTemp, Warning, TEXT("Seeking"));
 
 	}
 	//Else wander around the maze
@@ -206,9 +205,9 @@ void AMEnemy::Reset(FVector2D& currentPosition)
 	NewRotation.Yaw = FMath::RoundToFloat(NewRotation.Yaw / 90.0f) * 90.0f;
 	SetActorRotation(NewRotation);
 
-	UE_LOG(LogTemp, Warning, TEXT("A: %f"), NewRotation.Yaw);
+	/*UE_LOG(LogTemp, Warning, TEXT("A: %f"), NewRotation.Yaw);
 	UE_LOG(LogTemp, Warning, TEXT("B: %f"), GetActorRotation().Yaw);
-	UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), GetActorForwardVector().X, GetActorForwardVector().Y);
+	UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), GetActorForwardVector().X, GetActorForwardVector().Y);*/
 
 	currentPosition.X = FMath::RoundToFloat(currentPosition.X / 100.0f) * 100.0f;
 	currentPosition.Y = FMath::RoundToFloat(currentPosition.Y / 100.0f) * 100.0f;
@@ -241,9 +240,6 @@ void AMEnemy::CheckSides(bool& turned)
 	//FVector SideStart = End;
 	FVector RightLine = SideStart + (GetActorRightVector() * 200.0f);
 	FVector LeftLine = SideStart + (GetActorRightVector() * -200.0f);
-
-	DrawDebugLine(GetWorld(), SideStart, RightLine, FColor::Red, false, 1, 0, 1);
-	DrawDebugLine(GetWorld(), SideStart, LeftLine, FColor::Blue, false, 1, 0, 1);
 
 	if (checkRight)
 	{
@@ -417,12 +413,19 @@ void AMEnemy::OnPawnSeen(APawn* SeenPawn)
 {
 	if (SeenPawn)
 	{
-		if (seenTimer >= 2.0f)
+		if (!foundPlayer && !attacking)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("I see you"));
-			DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Red, false, 10.0f);
-			heardTimer = 0.0f;
+			FoundEvent();
+		}
+		else
+		{
+			if (seenTimer >= 2.0f)
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("I see you"));
+				SeenEvent();
+				heardTimer = 0.0f;
 
+			}
 		}
 		canSee = true;
 		seenTimer = 0.0f;
@@ -439,12 +442,19 @@ void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, floa
 	seen = false
 	output message
 	*/
-	if (heardTimer >= 2.0f)
+	if (!foundPlayer && !attacking)
 	{
-		DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
-		UE_LOG(LogTemp, Warning, TEXT("Yes I hear you"));
-		seenTimer = 0.0f;
+		FoundEvent();
+	}
+	else
+	{
+		if (heardTimer >= 2.0f)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Yes I hear you"));
+			HeardEvent();
+			seenTimer = 0.0f;
 
+		}
 	}
 	heardTimer = 0.0f;
 	canSee = false;
@@ -458,10 +468,10 @@ void AMEnemy::FoundPlayer()
 	if (!foundPlayer && !attacking)
 	{
 		foundPlayer = true;
+		seenTimer = 0.0f;
+		heardTimer = 0.0f;
 		if (AController* AI = GetController())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("4"));
-
 			AI->StopMovement();
 		}
 		GetCharacterMovement()->MaxWalkSpeed = 600;

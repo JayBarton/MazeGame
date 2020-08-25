@@ -54,6 +54,15 @@ public:
 
 	void FoundPlayer();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "AI")
+	void SeenEvent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "AI")
+	void HeardEvent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "AI")
+	void FoundEvent();
+
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UPawnSensingComponent* PawnSensingComp;
 

@@ -347,16 +347,6 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 	//Entrance
 	float entrancePosition = startPosition;
 	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
-	UE_LOG(LogTemp, Warning, TEXT("%f"), startPosition);
-
-	//Enemy
-	//Currently not working
-	//GetWorld()->SpawnActor<AActor>(enemy, FVector(-600, -200, 108), FRotator::ZeroRotator, SpawnParams);
-	
-
-
-
-
 
 	if (treasureLocation == 0)
 	{
