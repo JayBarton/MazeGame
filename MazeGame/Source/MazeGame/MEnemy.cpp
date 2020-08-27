@@ -127,7 +127,7 @@ void AMEnemy::FollowPlayer(FVector2D& playerPosition)
 			GetCharacterMovement()->MaxWalkSpeed = 300;
 			thePlayer->bChased = false;
 
-			UE_LOG(LogTemp, Warning, TEXT("Lost you..."));
+			LostPlayerEvent();
 			moveToPosition = false;
 		}
 	}
@@ -416,12 +416,13 @@ void AMEnemy::OnPawnSeen(APawn* SeenPawn)
 		if (!foundPlayer && !attacking)
 		{
 			FoundEvent();
+			UE_LOG(LogTemp, Warning, TEXT("a: %i, %i"), foundPlayer, attacking);
+
 		}
 		else
 		{
 			if (seenTimer >= 2.0f)
 			{
-				//UE_LOG(LogTemp, Warning, TEXT("I see you"));
 				SeenEvent();
 				heardTimer = 0.0f;
 
@@ -445,12 +446,13 @@ void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, floa
 	if (!foundPlayer && !attacking)
 	{
 		FoundEvent();
+		UE_LOG(LogTemp, Warning, TEXT("b: %i, %i"), foundPlayer, attacking);
+
 	}
 	else
 	{
 		if (heardTimer >= 2.0f)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Yes I hear you"));
 			HeardEvent();
 			seenTimer = 0.0f;
 

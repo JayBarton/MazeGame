@@ -63,6 +63,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "AI")
 	void FoundEvent();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "AI")
+	void LostPlayerEvent();
+
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UPawnSensingComponent* PawnSensingComp;
 
