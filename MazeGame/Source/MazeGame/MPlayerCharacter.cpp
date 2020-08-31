@@ -36,7 +36,6 @@ AMPlayerCharacter::AMPlayerCharacter()
 void AMPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

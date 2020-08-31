@@ -34,6 +34,14 @@ protected:
 
 	void SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
 
+	void SpawnLights(TArray<Cell>& cellGrid, float startPosition, TMap<FVector2D, bool>& wallGrid, FActorSpawnParameters& SpawnParams);
+
+	void SpawnOuterWalls(float startPosition, FActorSpawnParameters& SpawnParams);
+
+	void SpawnTreasure(FActorSpawnParameters& SpawnParams, TArray<Cell>& cellGrid, float startPosition);
+
+	void SpawnPlayer(float startPosition, FActorSpawnParameters& SpawnParams);
+
 	void BackTracker(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
 
 	void SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& wallGrid);
@@ -61,6 +69,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Maze")
 	TSubclassOf<AActor> light = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Maze")
+	TSubclassOf<AActor>  thePlayer = nullptr;
 
 	int minSize = 0;
 	UPROPERTY(EditAnywhere, Category = "Setup")

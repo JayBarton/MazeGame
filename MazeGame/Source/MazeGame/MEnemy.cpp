@@ -416,8 +416,6 @@ void AMEnemy::OnPawnSeen(APawn* SeenPawn)
 		if (!foundPlayer && !attacking)
 		{
 			FoundEvent();
-			UE_LOG(LogTemp, Warning, TEXT("a: %i, %i"), foundPlayer, attacking);
-
 		}
 		else
 		{
@@ -446,8 +444,6 @@ void AMEnemy::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, floa
 	if (!foundPlayer && !attacking)
 	{
 		FoundEvent();
-		UE_LOG(LogTemp, Warning, TEXT("b: %i, %i"), foundPlayer, attacking);
-
 	}
 	else
 	{

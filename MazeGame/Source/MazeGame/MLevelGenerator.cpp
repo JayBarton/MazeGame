@@ -6,6 +6,12 @@
 #include "Kismet/GameplayStatics.h" 
 #include "Engine/World.h" 
 #include "MGameInstance.h"
+#include "GameFramework/Character.h"
+
+
+#include "GameFramework/PlayerStart.h" 
+#include "MPlayerCharacter.h"
+
 // Sets default values
 AMLevelGenerator::AMLevelGenerator()
 {
@@ -101,6 +107,7 @@ void AMLevelGenerator::SetUpGrids(TArray<Cell>& cellGrid, TMap<FVector2D, bool>&
 		}
 	}
 
+	//Abandoned idea, may revist later
 /*	count = 0;
 	for (int i = minSize; i < maxSize; i += 2)
 	{
@@ -272,9 +279,33 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 		AActor* newWall = GetWorld()->SpawnActor<AActor>(wall, location, FRotator::ZeroRotator, SpawnParams);
 	}
 
+	SpawnLights(cellGrid, startPosition, wallGrid, SpawnParams);
+	
+	SpawnOuterWalls(startPosition, SpawnParams);
+
+	//Floor
+	AActor* theFloor = GetWorld()->SpawnActor<AActor>(floor, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParams);
+	float floorSize = maxSize / 5;
+	theFloor->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
+
+	//Ceiling
+	AActor* theCeiling = GetWorld()->SpawnActor<AActor>(floor, FVector(0, 0, 350.0f), FRotator::ZeroRotator, SpawnParams);
+	theCeiling->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
+
+	//Entrance
+	float entrancePosition = startPosition;
+	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
+
+	SpawnTreasure(SpawnParams, cellGrid, startPosition);
+
+	SpawnPlayer(startPosition, SpawnParams);
+
+}
+
+void AMLevelGenerator::SpawnLights(TArray<Cell>& cellGrid, float startPosition, TMap<FVector2D, bool>& wallGrid, FActorSpawnParameters& SpawnParams)
+{
 	int side = 0;
-	//Lights
-	for(int i = 2; i < cellGrid.Num(); i +=2)
+	for (int i = 2; i < cellGrid.Num(); i += 2)
 	{
 		FVector2D p = cellGrid[i].position;
 		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 250);
@@ -293,7 +324,7 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 				location.X -= 100;
 				rotation = FRotator(0.0f, 90.0f, 0.0f);
 				AActor* newLight = GetWorld()->SpawnActor<AActor>(light, location, rotation, SpawnParams);
-			//	side = 1;
+				//	side = 1;
 			}
 		}
 		else if (side == 1)
@@ -313,9 +344,10 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 			}
 		}
 	}
-	
-	//Outer walls
-	//Will need to rework this at some point so that I can create an entrance
+}
+
+void AMLevelGenerator::SpawnOuterWalls(float startPosition, FActorSpawnParameters& SpawnParams)
+{
 	FVector location1(-startPosition, -startPosition, wallFloor);
 	AActor* outer = GetWorld()->SpawnActor<AActor>(outerWall, location1, FRotator::ZeroRotator, SpawnParams);
 
@@ -335,19 +367,10 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 		location = FVector(startPosition + halfSize, startPosition + halfSize - (i * halfSize), 0.0f);
 		newWall->AddInstance(FTransform(location));
 	}
+}
 
-	//Floor
-	AActor* theFloor = GetWorld()->SpawnActor<AActor>(floor, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParams);
-	float floorSize = maxSize / 5;
-	theFloor->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
-
-	AActor* theCeiling = GetWorld()->SpawnActor<AActor>(floor, FVector(0, 0, 350.0f), FRotator::ZeroRotator, SpawnParams);
-	theCeiling->SetActorScale3D(FVector(floorSize, floorSize, 1.0f));
-
-	//Entrance
-	float entrancePosition = startPosition;
-	GetWorld()->SpawnActor<AActor>(entrance, FVector(entrancePosition, entrancePosition, 0), FRotator::ZeroRotator, SpawnParams);
-
+void AMLevelGenerator::SpawnTreasure(FActorSpawnParameters& SpawnParams, TArray<Cell>& cellGrid, float startPosition)
+{
 	if (treasureLocation == 0)
 	{
 		//Hard set for now
@@ -367,6 +390,33 @@ void AMLevelGenerator::SetWalls(TArray<Cell>& cellGrid, TMap<FVector2D, bool>& w
 		FVector location(startPosition - (p.X * distanceBetweenCells), startPosition - (p.Y * distanceBetweenCells), 100);
 		GetWorld()->SpawnActor<AActor>(treasure, location, FRotator::ZeroRotator, SpawnParams);
 	}
+}
+
+void AMLevelGenerator::SpawnPlayer(float startPosition, FActorSpawnParameters& SpawnParams)
+{
+	FVector position(startPosition, startPosition, 100);
+	FRotator rotation(0.0f, -90.0f, 0.0f);
+	auto player = GetWorld()->SpawnActor<AMPlayerCharacter>(thePlayer, position, rotation, SpawnParams);
+
+	FHitResult OutHit;
+
+	FVector Start = player->GetActorLocation();
+
+	FVector ForwardVector = player->GetActorForwardVector();
+	FVector End = ((ForwardVector * 200.0f) + Start);
+	FCollisionQueryParams CollisionParams;
+
+	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams))
+	{
+		if (OutHit.bBlockingHit)
+		{
+			FRotator NewRotation = player->GetActorRotation();
+			NewRotation.Yaw -= 90.0f;
+			player->SetActorRotation(NewRotation);
+			UE_LOG(LogTemp, Warning, TEXT("Heeeeeys"));
+		}
+	}
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(player);
 }
 
 

@@ -6,8 +6,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h" 
 
-
-
 #include "UObject/UObjectGlobals.h" 
 #include "Engine/StaticMesh.h" 
 void AMazeGameGameModeBase::CompleteLevel(bool success, APawn* InstigatorPawn)
